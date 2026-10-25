@@ -194,7 +194,7 @@ class InferenceService:
                 frames=len(frames_data),
                 latencyMs=int((time.time() - t0) * 1000),
                 isUncertain=True,
-                rejectionMessage="Feature extraction failed. Please ensure hands are clearly visible.",
+                rejectionMessage="Sign not recognized. Please try again.",
             )
 
         # 2. Model Prediction
