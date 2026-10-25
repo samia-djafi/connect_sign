@@ -20,5 +20,5 @@ services:
       - key: UNCERTAINTY_THRESHOLD
         value: "0.12"
       - key: CORS_ORIGINS
-        sync: false
-        value: "http://localhost:5173,https://bridge-sign.vercel.app"
+        sync: true
+        value: "http://localhost:5173,http://localhost:3000,https://bridge-sign.vercel.app,https://connect-sign-nine.vercel.app"
