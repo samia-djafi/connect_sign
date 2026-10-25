@@ -573,7 +573,7 @@ export const WorkspacePage: React.FC = () => {
                 {t('mode.signToLang', 'Sign to Text (Algerian Sign Language)')}
               </h3>
               <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
-                {t('workspace.aiProtoDisclaimer', 'AI Model in Active Development')}
+                {t('workspace.aiProtoDisclaimer')}
               </span>
             </div>
           </div>
