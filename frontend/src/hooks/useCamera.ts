@@ -89,7 +89,7 @@ export function useCamera(defaultFacingMode: CameraFacingMode = 'user'): UseCame
       try {
         const constraints: MediaStreamConstraints = {
           video: {
-            facingMode: targetFacing,
+            facingMode: { ideal: targetFacing },
             width: { ideal: 960 },
             height: { ideal: 540 },
             frameRate: { ideal: 30, max: 30 },
