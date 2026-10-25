@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { registry } from '@/services/registry';
 import { SignClip, SpokenLang, UiLang } from '@/types/domain';
 import { SignPlayer } from './SignPlayer';
+import { SEED_PHRASES } from '@/data/phrasebook';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import {
@@ -118,6 +119,7 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
   const [isAddedToConv, setIsAddedToConv] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const requestIdRef = useRef<number>(0);
 
   React.useEffect(() => {
     if (externalClips && externalClips.length > 0) {
@@ -131,12 +133,14 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
     const text = raw.trim();
     if (!text) return;
 
+    const currentReqId = ++requestIdRef.current;
     setStatus('loading');
     setLastSubmittedText(text);
     setIsAddedToConv(false);
 
     try {
       const result = await registry.textToSign.sentenceToGloss(text, activeLang);
+      if (currentReqId !== requestIdRef.current) return;
 
       if (result.gloss.length === 0) {
         setTranslatedClips([]);
@@ -145,12 +149,14 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
         setStatus('unsupported');
       } else {
         const clips = await registry.signAssets.getClips(result.gloss);
+        if (currentReqId !== requestIdRef.current) return;
         setTranslatedClips(clips);
         setUnsupportedTokens([]);
         setSuggestions([]);
         setStatus('supported');
       }
     } catch {
+      if (currentReqId !== requestIdRef.current) return;
       setStatus('error');
       setTranslatedClips([]);
     }
@@ -299,8 +305,8 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
           <div
             role="region"
             aria-label="Zone d'affichage du signe LSA"
-            className={`w-full aspect-video rounded-card bg-neutral-900 border border-app-border-strong flex flex-col items-center justify-center p-8 text-center text-white space-y-3.5 ${
-              prominentMode ? 'min-h-[360px] sm:min-h-[420px]' : 'min-h-[280px]'
+            className={`w-full aspect-video rounded-card bg-neutral-900 border border-app-border-strong flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center text-white space-y-3.5 ${
+              prominentMode ? 'min-h-[240px] sm:min-h-[340px] md:min-h-[420px]' : 'min-h-[200px] sm:min-h-[260px] md:min-h-[300px]'
             }`}
           >
             <div className="w-14 h-14 rounded-full bg-app-primary-strong/20 border border-app-primary-strong/40 flex items-center justify-center text-app-primary-strong shadow-lg">
@@ -326,8 +332,8 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
           <div
             role="status"
             aria-live="polite"
-            className={`w-full aspect-video rounded-card bg-neutral-900 border border-app-border-strong flex flex-col items-center justify-center p-8 text-center text-white space-y-3 ${
-              prominentMode ? 'min-h-[360px] sm:min-h-[420px]' : 'min-h-[280px]'
+            className={`w-full aspect-video rounded-card bg-neutral-900 border border-app-border-strong flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center text-white space-y-3 ${
+              prominentMode ? 'min-h-[240px] sm:min-h-[340px] md:min-h-[420px]' : 'min-h-[200px] sm:min-h-[260px] md:min-h-[300px]'
             }`}
           >
             <Loader2 className="w-10 h-10 animate-spin text-app-primary-strong" />
@@ -345,8 +351,8 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
           <div
             role="region"
             aria-label="Phrase non supportée"
-            className={`w-full aspect-video rounded-card bg-neutral-900 border border-amber-500/40 flex flex-col items-center justify-center p-6 sm:p-8 text-center text-white space-y-3.5 ${
-              prominentMode ? 'min-h-[360px] sm:min-h-[420px]' : 'min-h-[280px]'
+            className={`w-full aspect-video rounded-card bg-neutral-900 border border-amber-500/40 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center text-white space-y-3.5 ${
+              prominentMode ? 'min-h-[240px] sm:min-h-[340px] md:min-h-[420px]' : 'min-h-[200px] sm:min-h-[260px] md:min-h-[300px]'
             }`}
           >
             <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
@@ -389,14 +395,24 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
                 <span className="text-[11px] text-neutral-400">
                   {t('composer.quickSuggestions', 'Suggestions rapides')} :
                 </span>
-                {suggestions.map((sug, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 rounded bg-black/40 border border-white/10 text-[11px] text-app-primary-soft-2 font-mono"
-                  >
-                    {sug}
-                  </span>
-                ))}
+                {suggestions.map((sugId, i) => {
+                  const phrase = SEED_PHRASES.find((p) => p.id === sugId);
+                  const label = phrase ? (phrase.text[activeLang] || phrase.text.fr) : sugId;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setInputText(label);
+                        handleTranslate(label);
+                      }}
+                      className="px-2 py-0.5 rounded bg-black/40 hover:bg-black/60 border border-white/10 hover:border-app-primary-strong text-[11px] text-app-primary-soft-2 font-medium transition-colors"
+                      title={t('composer.suggestions', 'Traduire cette suggestion')}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -405,8 +421,8 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
         {status === 'error' && (
           <div
             role="alert"
-            className={`w-full aspect-video rounded-card bg-neutral-900 border border-red-500/40 flex flex-col items-center justify-center p-8 text-center text-white space-y-3 ${
-              prominentMode ? 'min-h-[360px] sm:min-h-[420px]' : 'min-h-[280px]'
+            className={`w-full aspect-video rounded-card bg-neutral-900 border border-red-500/40 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center text-white space-y-3 ${
+              prominentMode ? 'min-h-[240px] sm:min-h-[340px] md:min-h-[420px]' : 'min-h-[200px] sm:min-h-[260px] md:min-h-[300px]'
             }`}
           >
             <AlertCircle className="w-10 h-10 text-app-error" />
