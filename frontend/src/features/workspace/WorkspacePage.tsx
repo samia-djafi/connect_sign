@@ -563,36 +563,39 @@ export const WorkspacePage: React.FC = () => {
       className={`flex flex-col justify-between min-h-0 overflow-y-auto ${customClassName}`}
     >
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between border-b border-app-border pb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xl" aria-hidden="true">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-app-border pb-2.5">
+          <div className="flex items-start sm:items-center gap-2.5 min-w-0 max-w-full sm:max-w-[55%]">
+            <span className="text-xl shrink-0 mt-0.5 sm:mt-0" aria-hidden="true">
               🤟
             </span>
-            <div>
-              <h3 className="font-bold text-sm text-app-text">
+            <div className="min-w-0 flex flex-col">
+              <h3 className="font-bold text-sm text-app-text leading-snug">
                 {t('mode.signToLang', 'Sign to Text (Algerian Sign Language)')}
               </h3>
-              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium leading-normal break-words">
                 {t('workspace.aiProtoDisclaimer')}
               </span>
             </div>
           </div>
-          <RecognitionStatus
-            state={
-              camera.status === 'idle'
-                ? 'permission_needed'
-                : camera.status === 'error'
-                ? 'error'
-                : recognition.state
-            }
-            errorMessage={
-              camera.status === 'error'
-                ? camera.errorCode === 'CAM-001'
-                  ? t('err.camBlocked', 'Camera access blocked. Please enable camera permissions.')
-                  : t('err.camGeneric', 'Camera hardware error.')
-                : recognition.errorMessage
-            }
-          />
+          <div className="shrink-0 w-full sm:w-auto min-w-0">
+            <RecognitionStatus
+              state={
+                camera.status === 'idle'
+                  ? 'permission_needed'
+                  : camera.status === 'error'
+                  ? 'error'
+                  : recognition.state
+              }
+              errorMessage={
+                camera.status === 'error'
+                  ? camera.errorCode === 'CAM-001'
+                    ? t('err.camBlocked', 'Camera access blocked. Please enable camera permissions.')
+                    : t('err.camGeneric', 'Camera hardware error.')
+                  : recognition.errorMessage
+              }
+              className="w-full sm:w-auto"
+            />
+          </div>
         </div>
 
         {/* Camera Panel */}
@@ -811,7 +814,7 @@ export const WorkspacePage: React.FC = () => {
           </Button>
 
           {/* Mode selector (visible, accessible, and touch-friendly on both mobile and desktop) */}
-          <div className="shrink-0 relative inline-flex items-center">
+          <div className="relative inline-flex items-center min-w-0 shrink max-w-[130px] sm:max-w-[200px] md:max-w-xs">
             <label htmlFor="workspace-mode-select" className="sr-only">
               {t('newConv.modeLabel', 'Mode de traduction')}
             </label>
@@ -824,7 +827,7 @@ export const WorkspacePage: React.FC = () => {
                 const newMode = e.target.value as any;
                 await setSessionMode(newMode);
               }}
-              className="h-8 ps-2.5 pe-7 text-xs font-semibold rounded-pill bg-teal-500/10 hover:bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:border-teal-500/60 focus:outline-none focus:ring-2 focus:ring-app-primary-strong cursor-pointer transition-all appearance-none shrink-0"
+              className="h-8 w-full min-w-0 ps-2.5 pe-7 text-xs font-semibold rounded-pill bg-teal-500/10 hover:bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:border-teal-500/60 focus:outline-none focus:ring-2 focus:ring-app-primary-strong cursor-pointer transition-all appearance-none truncate"
             >
               <option value="two_way" className="bg-app-surface text-app-text">
                 {t('mode.twoWay', 'Double sens')}
@@ -1035,17 +1038,22 @@ export const WorkspacePage: React.FC = () => {
           /* Focused Language-to-Sign / Text-to-Sign Experience */
           <div
             data-testid="language-to-sign-view"
-            className={`flex-1 min-h-0 overflow-y-auto max-w-4xl w-full mx-auto p-1 sm:p-4 ${
-              mobileTab === 'conversation' ? 'hidden md:block' : 'block'
+            className={`flex-1 min-h-0 overflow-y-auto max-w-4xl w-full mx-auto p-1 sm:p-4 flex flex-col ${
+              mobileTab === 'conversation' ? 'hidden md:flex' : 'flex'
             }`}
           >
-            <TextToSignPanel
-              currentLang={currentSession.spokenLang}
-              prominentMode
-              autoFocus
-              externalClips={translatedClips}
-              onAddToConversation={handleAddToConversation}
-            />
+            <Card
+              p={16}
+              className="flex-1 min-h-0 flex flex-col justify-between overflow-y-auto"
+            >
+              <TextToSignPanel
+                currentLang={currentSession.spokenLang}
+                prominentMode
+                autoFocus
+                externalClips={translatedClips}
+                onAddToConversation={handleAddToConversation}
+              />
+            </Card>
           </div>
         ) : currentSession.mode === 'sign_to_language' ? (
           /* Focused Sign-to-Language / Sign Recognition Experience */

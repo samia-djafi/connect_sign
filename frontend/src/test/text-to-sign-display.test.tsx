@@ -13,13 +13,19 @@ describe('Text-to-Sign Display Prototype', () => {
     ).toBeInTheDocument();
   });
 
-  it('displays the development notice with honest wording', () => {
+  it('renders section title exactly as Text → Sign', () => {
     render(<TextToSignPanel currentLang="en" />);
 
-    expect(screen.getByText(/LSA translation is under development/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Text → Sign' })).toBeInTheDocument();
+  });
+
+  it('does not display the development notice in the rendered UI', () => {
+    render(<TextToSignPanel currentLang="en" />);
+
+    expect(screen.queryByText(/LSA translation is under development/i)).toBeNull();
     expect(
-      screen.getByText(/Only a limited number of words and phrases may be available/i)
-    ).toBeInTheDocument();
+      screen.queryByText(/Only a limited number of words and phrases may be available/i)
+    ).toBeNull();
   });
 
   it('renders "Try an example" section with candidate phrases and accurate badges', () => {

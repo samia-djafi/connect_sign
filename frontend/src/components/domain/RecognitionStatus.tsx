@@ -83,7 +83,7 @@ export const RecognitionStatus: React.FC<RecognitionStatusProps> = ({
       className={`flex items-center gap-2.5 px-3 py-2 rounded-control bg-app-surface-2 border border-app-border text-xs ${className}`}
     >
       <div className="shrink-0">{config.icon}</div>
-      <div className="flex flex-col truncate">
+      <div className="flex flex-col min-w-0">
         <span className={`font-semibold ${config.badgeColor} truncate`}>{config.title}</span>
         <span className="text-[11px] text-app-muted truncate">{config.subtitle}</span>
       </div>

@@ -5,10 +5,8 @@ import { SignClip, SpokenLang, UiLang } from '@/types/domain';
 import { SignPlayer } from './SignPlayer';
 import { SEED_PHRASES } from '@/data/phrasebook';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import {
   Sparkles,
-  Info,
   HelpCircle,
   AlertCircle,
   SearchX,
@@ -188,36 +186,49 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
   };
 
   return (
-    <div data-testid="text-to-sign-panel" className={`flex flex-col gap-5 ${className}`}>
-      {/* 1. Development Notice Banner */}
-      <div
-        role="note"
-        aria-label={t('textToSign.devNoticeTitle', 'LSA translation is under development.')}
-        className="p-3.5 rounded-card bg-app-surface-2 border border-app-primary-strong/30 flex items-start gap-3 text-xs text-app-text"
-      >
-        <div className="w-5 h-5 rounded-full bg-app-primary-strong/15 text-app-primary-strong flex items-center justify-center shrink-0 mt-0.5">
-          <Info className="w-3.5 h-3.5" />
+    <div data-testid="text-to-sign-panel" className={`flex flex-col space-y-2.5 ${className}`}>
+      {/* Header matching Sign → Text visual hierarchy */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-app-border pb-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-xl shrink-0" aria-hidden="true">
+            🗣️
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-bold text-sm text-app-text">
+              Text → Sign
+            </h3>
+          </div>
         </div>
-        <div className="space-y-0.5">
-          <p className="font-bold text-app-primary-strong">
-            {t('textToSign.devNoticeTitle', 'LSA translation is under development.')}
-          </p>
-          <p className="text-app-muted leading-relaxed">
-            {t(
-              'textToSign.devNoticeMessage',
-              "ConnectSign's Text-to-Sign feature is still under development. Only a limited number of words and phrases may be available. If a sign is unavailable, we will let you know rather than display an incorrect gesture."
-            )}
-          </p>
-        </div>
+        {status === 'supported' && translatedClips.length > 0 && onAddToConversation && (
+          <div className="shrink-0 w-full sm:w-auto flex justify-end">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleAddToConversation}
+              disabled={isAddedToConv}
+              iconStart={
+                isAddedToConv ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-app-success" />
+                ) : (
+                  <MessageSquarePlus className="w-3.5 h-3.5 text-app-primary-strong" />
+                )
+              }
+            >
+              {isAddedToConv
+                ? t('textToSign.addedToConversation', 'Added to conversation')
+                : t('textToSign.addToConversation', 'Add to conversation')}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* 2. Text Input & Translate Action */}
-      <Card p={16} className="space-y-3 bg-app-surface border border-app-border">
-        <label htmlFor="text-to-sign-input" className="block text-xs font-bold uppercase tracking-wider text-app-muted">
-          {t('textToSign.title', 'Text to Sign (LSA)')}
+      {/* Text Input & Translate Action */}
+      <div className="space-y-1.5">
+        <label htmlFor="text-to-sign-input" className="sr-only">
+          {t('textToSign.title', 'Text to Sign')}
         </label>
 
-        <div className="flex flex-col sm:flex-row gap-2.5">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <input
               id="text-to-sign-input"
@@ -237,7 +248,7 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
                 'textToSign.inputPlaceholder',
                 'Enter a word or phrase… (e.g. Hello, Thank you, I have a headache)'
               )}
-              className="w-full px-3.5 py-2.5 pe-9 rounded-control border border-app-border-strong bg-app-surface text-app-text text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary-strong transition-all"
+              className="w-full h-10 px-3.5 pe-9 rounded-control border border-app-border-strong bg-app-surface text-app-text text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary-strong transition-all"
             />
             {inputText && (
               <button
@@ -264,40 +275,21 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
                 <Sparkles className="w-4 h-4" />
               )
             }
-            className="shrink-0 bg-[#0D9488] hover:bg-[#0F766E] border-none text-white font-semibold"
+            className="shrink-0 h-10 font-semibold"
           >
             {status === 'loading'
               ? t('textToSign.translating', 'Translating…')
               : t('textToSign.translateButton', 'Translate')}
           </Button>
         </div>
-      </Card>
+      </div>
 
-      {/* 3. Central Dedicated Visual Display Box */}
-      <div className="space-y-2">
+      {/* Central Dedicated Visual Display Box */}
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-app-muted">
+          <span className="text-xs font-semibold uppercase tracking-wider text-app-muted">
             {t('textToSign.title', 'Sign Display Box')}
           </span>
-          {status === 'supported' && translatedClips.length > 0 && onAddToConversation && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleAddToConversation}
-              disabled={isAddedToConv}
-              iconStart={
-                isAddedToConv ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-app-success" />
-                ) : (
-                  <MessageSquarePlus className="w-3.5 h-3.5 text-app-primary-strong" />
-                )
-              }
-            >
-              {isAddedToConv
-                ? t('textToSign.addedToConversation', 'Added to conversation')
-                : t('textToSign.addToConversation', 'Add to conversation')}
-            </Button>
-          )}
         </div>
 
         {/* Display Box States */}
@@ -436,11 +428,11 @@ export const TextToSignPanel: React.FC<TextToSignPanelProps> = ({
         )}
       </div>
 
-      {/* 4. "Try an example" Section */}
-      <div className="space-y-2 pt-1">
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-app-primary-strong" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-app-text">
+      {/* "Try an example" Section */}
+      <div className="space-y-1.5 pt-1">
+        <div className="flex items-center gap-1.5">
+          <HelpCircle className="w-3.5 h-3.5 text-app-primary-strong" />
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-app-text">
             {t('textToSign.tryExampleTitle', 'Try an example')}
           </h4>
         </div>

@@ -224,4 +224,78 @@ describe('ConnectSign Translation Flow Stability & Mobile Accessibility', () => 
       expect(screen.getByTestId('sign-to-lang-target')).toBeInTheDocument();
     });
   });
+
+  it('verifies top navigation header layout constraints preventing control overlap', async () => {
+    const session = await sessionRepository.create({
+      title: 'Layout Constraints Session',
+      context: 'healthcare',
+      signLanguage: 'LSA',
+      spokenLang: 'fr',
+      mode: 'two_way',
+      status: 'active',
+      aiMode: 'demo',
+      privacy: 'local',
+    });
+
+    render(
+      <MemoryRouter initialEntries={[`/app/workspace/${session.id}`]}>
+        <Routes>
+          <Route path="/app/workspace/:sessionId" element={<WorkspacePage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('workspace-mode-select')).toBeInTheDocument();
+    });
+
+    const modeSelect = screen.getByTestId('workspace-mode-select') as HTMLSelectElement;
+    // Check that select has truncate and min-w-0
+    expect(modeSelect.className).toContain('truncate');
+    expect(modeSelect.className).toContain('min-w-0');
+
+    // Check that mode select container has shrink and max-w constraints
+    const modeSelectContainer = modeSelect.parentElement;
+    expect(modeSelectContainer?.className).toContain('min-w-0');
+    expect(modeSelectContainer?.className).toContain('shrink');
+    expect(modeSelectContainer?.className).toContain('max-w-');
+
+    // Action buttons remain visible and in document
+    expect(screen.getByTestId('end-session-header-btn')).toBeInTheDocument();
+  });
+
+  it('ensures Sign to Text status tags and camera warning occupy non-conflicting layout areas', async () => {
+    const session = await sessionRepository.create({
+      title: 'Sign Status Test',
+      context: 'healthcare',
+      signLanguage: 'LSA',
+      spokenLang: 'fr',
+      mode: 'sign_to_language',
+      status: 'active',
+      aiMode: 'demo',
+      privacy: 'local',
+    });
+
+    render(
+      <MemoryRouter initialEntries={[`/app/workspace/${session.id}`]}>
+        <Routes>
+          <Route path="/app/workspace/:sessionId" element={<WorkspacePage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sign-recognition-panel')).toBeInTheDocument();
+    });
+
+    // Check that camera status warning and disclaimer exist in distinct containers
+    const cameraWarning = screen.getByRole('status');
+    expect(cameraWarning).toBeInTheDocument();
+
+    const disclaimer = screen.getByText(/Prototype de recherche|Research Prototype/i);
+    expect(disclaimer).toBeInTheDocument();
+
+    // Verify disclaimer parent container has wrapping rules and does not collide
+    expect(disclaimer.className).toContain('break-words');
+  });
 });

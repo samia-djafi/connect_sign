@@ -143,7 +143,7 @@
     "addedToConversation": "Added to conversation"
   },
   "textToSign": {
-    "title": "Text to Sign (LSA)",
+    "title": "Text → Sign",
     "subtitle": "Translate spoken words and phrases into Algerian Sign Language signs.",
     "inputPlaceholder": "Enter a word or phrase… (e.g. Hello, Thank you, I have a headache)",
     "translateButton": "Translate",
