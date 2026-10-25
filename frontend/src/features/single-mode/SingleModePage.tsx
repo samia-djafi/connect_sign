@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -12,11 +12,15 @@ export const SingleModePage: React.FC = () => {
   const location = useLocation();
   const { startSession } = useSessionStore();
   const { settings, updateSettings } = useSettingsStore();
+  const hasStartedRef = useRef(false);
 
   const isSignToLang = location.pathname.includes('sign-to-language');
   const targetMode: SessionMode = isSignToLang ? 'sign_to_language' : 'language_to_sign';
 
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     async function initSession() {
       updateSettings({
         lastMode: targetMode,
@@ -39,13 +43,13 @@ export const SingleModePage: React.FC = () => {
     }
 
     initSession();
-  }, [isSignToLang, targetMode, settings, startSession, navigate]);
+  }, [isSignToLang, targetMode, settings.defaultSpokenLang, settings.lastContext, updateSettings, startSession, navigate]);
 
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-3 text-app-muted">
         <Loader className="w-8 h-8 animate-spin text-app-primary-strong" />
-        <p className="text-sm font-medium">{t('singleMode.loading', 'Opening focused mode…')}</p>
+        <p className="text-sm font-medium">{t('singleMode.loading', 'Ouverture du mode ciblé…')}</p>
       </div>
     </div>
   );
