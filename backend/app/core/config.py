@@ -49,30 +49,25 @@ class Settings(BaseSettings):
                 results.append(f"https://{cleaned}")
             return results
 
+        parsed_origins: List[str] = []
         if isinstance(v, str):
             v_str = v.strip().strip("'\"")
-            if not v_str:
-                return default_origins
             if v_str.startswith("[") and v_str.endswith("]"):
                 try:
                     parsed = json.loads(v_str)
                     if isinstance(parsed, list):
-                        res: List[str] = []
                         for item in parsed:
-                            res.extend(_clean(item))
-                        return res or default_origins
+                            parsed_origins.extend(_clean(item))
                 except Exception:
                     pass
-            res = []
-            for i in v_str.split(","):
-                res.extend(_clean(i))
-            return res or default_origins
+            if not parsed_origins and v_str:
+                for i in v_str.split(","):
+                    parsed_origins.extend(_clean(i))
         elif isinstance(v, list):
-            res = []
             for i in v:
-                res.extend(_clean(i))
-            return res or default_origins
-        return default_origins
+                parsed_origins.extend(_clean(i))
+
+        return parsed_origins or default_origins
 
     # Model configuration
     MODEL_DIR: str = os.getenv(
