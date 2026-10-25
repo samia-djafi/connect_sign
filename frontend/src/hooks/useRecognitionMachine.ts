@@ -22,6 +22,7 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
   const maxUtteranceTimerRef = useRef<any>(null);
   const noHandsTimerRef = useRef<any>(null);
   const isTrackingHandsRef = useRef(false);
+  const isFinalizingRef = useRef(false);
 
   const transitionTo = useCallback((nextState: RecognitionState, announceText?: string) => {
     setState(nextState);
@@ -37,6 +38,8 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
   };
 
   const finalizeRecognition = useCallback(async () => {
+    if (isFinalizingRef.current) return;
+    isFinalizingRef.current = true;
     resetTimers();
     transitionTo('processing', 'Interprétation en cours');
 
@@ -61,6 +64,8 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
       setErrorMessage(err.message || 'AI-004');
       transitionTo('error', 'Erreur lors de la reconnaissance');
       logger.error('Recognition finalize failed', err.code || 'AI-004', err);
+    } finally {
+      isFinalizingRef.current = false;
     }
   }, [transitionTo, onRecognized]);
 
@@ -93,6 +98,9 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
       finalizeRecognition();
     } else {
       resetTimers();
+      if ('abort' in registry.ai.recognition) {
+        (registry.ai.recognition as any).abort();
+      }
       transitionTo('camera_ready');
     }
   }, [state, finalizeRecognition, transitionTo]);
@@ -141,6 +149,9 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
 
   const resetToReady = useCallback(() => {
     resetTimers();
+    if ('abort' in registry.ai.recognition) {
+      (registry.ai.recognition as any).abort();
+    }
     setRecognizedResult(null);
     setProposedSentence(null);
     setNoHandsWarning(false);
@@ -150,6 +161,9 @@ export function useRecognitionMachine({ spokenLang, onRecognized }: UseRecogniti
   useEffect(() => {
     return () => {
       resetTimers();
+      if ('abort' in registry.ai.recognition) {
+        (registry.ai.recognition as any).abort();
+      }
     };
   }, []);
 
