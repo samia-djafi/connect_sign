@@ -105,6 +105,36 @@ export const AppShell: React.FC = () => {
               <span className="hidden lg:inline">{t('nav.twoWay', 'Conversation')}</span>
             </NavLink>
 
+            {/* Focused translation modes (Desktop sub-links) */}
+            <div className="hidden lg:flex flex-col gap-0.5 my-1 ps-3 border-s-2 border-app-border ms-3">
+              <NavLink
+                to="/app/sign-to-language"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1 rounded-control text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'bg-app-primary-soft text-app-primary-strong font-bold'
+                      : 'text-app-muted hover:text-app-text hover:bg-app-surface-2'
+                  }`
+                }
+              >
+                <span>🤟</span>
+                <span>{t('mode.signToLang', 'LSA → Texte')}</span>
+              </NavLink>
+              <NavLink
+                to="/app/language-to-sign"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1 rounded-control text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'bg-app-primary-soft text-app-primary-strong font-bold'
+                      : 'text-app-muted hover:text-app-text hover:bg-app-surface-2'
+                  }`
+                }
+              >
+                <span>🗣️</span>
+                <span>{t('mode.langToSign', 'Texte → LSA')}</span>
+              </NavLink>
+            </div>
+
             {/* 3. Phrasebook */}
             <NavLink to="/app/phrasebook" className={navLinkClass}>
               <BookOpen className="w-5 h-5 shrink-0" />
@@ -256,7 +286,44 @@ export const AppShell: React.FC = () => {
         title={t('nav.menuAndTools', 'Menu & Outils')}
         maxWidth="sm"
       >
-        <div className="space-y-2 text-sm">
+        <div className="space-y-3 text-sm">
+          {/* Quick Translation Modes on Mobile */}
+          <div className="space-y-1.5 pb-2.5 border-b border-app-border">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted px-1 block">
+              {t('newConv.modeLabel', 'Modes de traduction')}
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                data-testid="mobile-sign-to-lang-btn"
+                variant="secondary"
+                size="sm"
+                fullWidth
+                onClick={() => {
+                  setMobileMoreOpen(false);
+                  navigate('/app/sign-to-language');
+                }}
+                className="flex items-center justify-center gap-1.5 font-bold text-xs"
+              >
+                <span>🤟</span>
+                <span>{t('mode.signToLang', 'LSA → Texte')}</span>
+              </Button>
+              <Button
+                data-testid="mobile-lang-to-sign-btn"
+                variant="secondary"
+                size="sm"
+                fullWidth
+                onClick={() => {
+                  setMobileMoreOpen(false);
+                  navigate('/app/language-to-sign');
+                }}
+                className="flex items-center justify-center gap-1.5 font-bold text-xs"
+              >
+                <span>🗣️</span>
+                <span>{t('mode.langToSign', 'Texte → LSA')}</span>
+              </Button>
+            </div>
+          </div>
+
           <Button
             variant="ghost"
             fullWidth
