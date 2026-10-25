@@ -44,6 +44,7 @@ import {
   Sparkles,
   MessageSquare,
   AlertTriangle,
+  ChevronDown,
 } from 'lucide-react';
 
 export const WorkspacePage: React.FC = () => {
@@ -793,9 +794,9 @@ export const WorkspacePage: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-app-bg text-app-text overflow-hidden">
       {/* Workspace Header Chrome */}
-      <header className="h-14 bg-app-surface border-b border-app-border px-4 flex items-center justify-between gap-3 shrink-0 select-none z-10">
-        {/* Left: Back & Title */}
-        <div className="flex items-center gap-3 min-w-0">
+      <header className="h-14 bg-app-surface border-b border-app-border px-2.5 sm:px-4 flex items-center justify-between gap-2 shrink-0 select-none z-10">
+        {/* Left: Back, Mode Switcher & Title */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
           <Button
             variant="ghost"
             size="sm"
@@ -804,11 +805,42 @@ export const WorkspacePage: React.FC = () => {
               navigate('/app');
             }}
             iconStart={<ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />}
+            className="shrink-0 px-2 sm:px-3"
           >
-            <span className="hidden sm:inline">{t('workspace.homeNav', 'Accueil')}</span>
+            <span className="hidden lg:inline">{t('workspace.homeNav', 'Accueil')}</span>
           </Button>
 
-          <div className="flex items-center gap-2 truncate">
+          {/* Mode selector (visible, accessible, and touch-friendly on both mobile and desktop) */}
+          <div className="shrink-0 relative inline-flex items-center">
+            <label htmlFor="workspace-mode-select" className="sr-only">
+              {t('newConv.modeLabel', 'Mode de traduction')}
+            </label>
+            <select
+              id="workspace-mode-select"
+              data-testid="workspace-mode-select"
+              aria-label={t('newConv.modeLabel', 'Mode de traduction')}
+              value={currentSession.mode}
+              onChange={async (e) => {
+                const newMode = e.target.value as any;
+                await setSessionMode(newMode);
+              }}
+              className="h-8 ps-2.5 pe-7 text-xs font-semibold rounded-pill bg-teal-500/10 hover:bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:border-teal-500/60 focus:outline-none focus:ring-2 focus:ring-app-primary-strong cursor-pointer transition-all appearance-none shrink-0"
+            >
+              <option value="two_way" className="bg-app-surface text-app-text">
+                {t('mode.twoWay', 'Double sens')}
+              </option>
+              <option value="sign_to_language" className="bg-app-surface text-app-text">
+                {t('mode.signToLang', 'LSA → Texte')}
+              </option>
+              <option value="language_to_sign" className="bg-app-surface text-app-text">
+                {t('mode.langToSign', 'Texte → LSA')}
+              </option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 absolute end-2 pointer-events-none shrink-0" />
+          </div>
+
+          {/* Title & Context (Only shown on wider screens to avoid cramping the mode selector on mobile) */}
+          <div className="hidden md:flex items-center gap-2 min-w-0 truncate">
             {isEditingTitle ? (
               <div className="flex items-center gap-1">
                 <input
@@ -842,38 +874,16 @@ export const WorkspacePage: React.FC = () => {
               </button>
             )}
 
-            <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-app-surface-2 text-[11px] font-medium text-app-muted border border-app-border">
+            <span className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-app-surface-2 text-[11px] font-medium text-app-muted border border-app-border">
               {t(`contexts.${currentSession.context}`)}
             </span>
-
-            {/* Mode selector (visible and accessible on both mobile and desktop) */}
-            <div className="inline-flex items-center">
-              <label htmlFor="workspace-mode-select" className="sr-only">
-                {t('newConv.modeLabel', 'Mode de traduction')}
-              </label>
-              <select
-                id="workspace-mode-select"
-                data-testid="workspace-mode-select"
-                aria-label={t('newConv.modeLabel', 'Mode de traduction')}
-                value={currentSession.mode}
-                onChange={async (e) => {
-                  const newMode = e.target.value as any;
-                  await setSessionMode(newMode);
-                }}
-                className="h-7 px-2 py-0.5 text-[11px] font-semibold rounded-pill bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:border-teal-500/50 focus:outline-none focus:ring-2 focus:ring-app-primary-strong cursor-pointer transition-all"
-              >
-                <option value="two_way">{t('mode.twoWay', 'Double sens')}</option>
-                <option value="sign_to_language">{t('mode.signToLang', 'LSA → Texte')}</option>
-                <option value="language_to_sign">{t('mode.langToSign', 'Texte → LSA')}</option>
-              </select>
-            </div>
           </div>
         </div>
 
         {/* Right: Timer, Spoken Language Switcher, Emergency, End */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Spoken language selector */}
-          <div className="hidden sm:flex items-center gap-1 bg-app-surface-2 p-0.5 rounded-control text-xs font-semibold">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Spoken language selector (hidden on small viewports so header does not crowd) */}
+          <div className="hidden lg:flex items-center gap-1 bg-app-surface-2 p-0.5 rounded-control text-xs font-semibold">
             {(['fr', 'ar', 'en'] as const).map((l) => (
               <button
                 key={l}
@@ -891,7 +901,7 @@ export const WorkspacePage: React.FC = () => {
           </div>
 
           {/* Active Timer */}
-          <div className="px-2 py-1 rounded-control bg-app-surface-2 text-xs font-mono font-bold text-app-text tabular-nums">
+          <div className="px-1.5 sm:px-2 py-1 rounded-control bg-app-surface-2 text-xs font-mono font-bold text-app-text tabular-nums shrink-0">
             {formatDuration(activeMs)}
           </div>
 
@@ -901,7 +911,7 @@ export const WorkspacePage: React.FC = () => {
             size="sm"
             onClick={() => setEmergencySheetOpen(true)}
             iconStart={<Siren className="w-4 h-4 text-app-warning" />}
-            className="border-app-warning/50 hover:bg-amber-500/10 dark:hover:bg-amber-500/15"
+            className="border-app-warning/50 hover:bg-amber-500/10 dark:hover:bg-amber-500/15 shrink-0 px-2 sm:px-3"
           >
             <span className="hidden md:inline">{t('emergency.button', 'Urgence')}</span>
           </Button>
@@ -911,6 +921,7 @@ export const WorkspacePage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => (status === 'active' ? pauseSession() : resumeSession())}
+            className="shrink-0 p-1.5 sm:p-2"
           >
             {status === 'active' ? (
               <Pause className="w-4 h-4 text-app-muted" />
@@ -928,7 +939,7 @@ export const WorkspacePage: React.FC = () => {
               setUnreadMessages(false);
             }}
             iconStart={<MessageSquare className="w-4 h-4 text-app-primary-strong" />}
-            className="hidden md:inline-flex items-center gap-1.5"
+            className="hidden md:inline-flex items-center gap-1.5 shrink-0"
             aria-label={t('timeline.title', 'Conversation')}
           >
             <span>{t('timeline.title', 'Conversation')}</span>
@@ -945,12 +956,15 @@ export const WorkspacePage: React.FC = () => {
             size="sm"
             disabled={isEnding}
             onClick={handleEndSession}
+            className="shrink-0"
           >
             {isEnding ? t('common.loading', 'Fin…') : t('dash.end', 'Terminer')}
           </Button>
 
-          {/* Theme toggle */}
-          <ThemeToggle />
+          {/* Theme toggle (visible on desktop) */}
+          <div className="hidden lg:block shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
