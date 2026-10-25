@@ -64,6 +64,7 @@ export const WorkspacePage: React.FC = () => {
     addMessage,
     editMessage,
     setSpokenLang,
+    setSessionMode,
     updateSessionTitle,
     clearSessionMessages,
   } = useSessionStore();
@@ -83,6 +84,30 @@ export const WorkspacePage: React.FC = () => {
       setMobileTab('sign');
     }
   }, [currentSession?.mode]);
+
+  // Cleanly shut down camera and recognition when switching away to language_to_sign
+  useEffect(() => {
+    if (currentSession?.mode === 'language_to_sign') {
+      if (recognition.state === 'recognizing' || recognition.state === 'capturing') {
+        recognition.stopRecognition();
+      }
+      camera.stopCamera();
+    }
+  }, [currentSession?.mode]);
+
+  // Comprehensive resource cleanup on unmount
+  useEffect(() => {
+    return () => {
+      camera.stopCamera();
+      if (recognition.state === 'recognizing' || recognition.state === 'capturing') {
+        recognition.stopRecognition();
+      }
+      registry.ai.recognition.reset();
+      if (sttListening) {
+        registry.speech.stt.stop();
+      }
+    };
+  }, []);
 
   // Modals & Sheets
   const [endConfirmOpen, setEndConfirmOpen] = useState(false);
@@ -648,6 +673,64 @@ export const WorkspacePage: React.FC = () => {
             </Button>
           </div>
         )}
+
+        {/* Processing State Indicator */}
+        {recognition.state === 'processing' && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="p-3 bg-app-surface-2 border border-app-primary-strong/40 rounded-control flex items-center justify-between text-xs text-app-text animate-pulse"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-3.5 border-2 border-app-primary-strong border-t-transparent rounded-full animate-spin shrink-0" />
+              <span className="font-medium">
+                {t('rec.processing', 'Interprétation en cours…')}
+              </span>
+            </div>
+            <span className="text-[11px] font-mono text-app-muted">
+              {registry.ai.adapter === 'live' ? 'Render AI' : 'Mode Démo'}
+            </span>
+          </div>
+        )}
+
+        {/* Error State Banner with Instant Retry */}
+        {recognition.state === 'error' && (
+          <div
+            role="alert"
+            className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-control flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-rose-700 dark:text-rose-400"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+              <div className="space-y-0.5">
+                <span className="font-bold block">
+                  {t('err.aiUnavailable', 'Erreur de reconnaissance')}
+                </span>
+                <span className="text-[11px] text-rose-600 dark:text-rose-300">
+                  {recognition.errorMessage || t('err.network', 'Une erreur est survenue lors de l’analyse. Veuillez réessayer.')}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  recognition.resetToReady();
+                  if (camera.status !== 'ready') {
+                    const ok = await camera.startCamera();
+                    if (!ok) return;
+                  }
+                  await recognition.startRecognition();
+                }}
+              >
+                {t('common.retry', 'Réessayer')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={recognition.resetToReady}>
+                {t('common.dismiss', 'Ignorer')}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Left Controls Strip */}
@@ -666,15 +749,19 @@ export const WorkspacePage: React.FC = () => {
             <Button
               variant="primary"
               size="sm"
+              disabled={recognition.state === 'processing'}
               onClick={async () => {
                 if (camera.status !== 'ready') {
-                  await camera.startCamera();
+                  const ok = await camera.startCamera();
+                  if (!ok) return;
                 }
                 recognition.startRecognition();
               }}
               iconStart={<Radio className="w-3.5 h-3.5 animate-pulse" />}
             >
-              {t('rec.startRec', 'Démarrer la reconnaissance')}
+              {recognition.state === 'processing'
+                ? t('rec.processing', 'Interprétation…')
+                : t('rec.startRec', 'Démarrer la reconnaissance')}
             </Button>
           )}
 
@@ -759,14 +846,27 @@ export const WorkspacePage: React.FC = () => {
               {t(`contexts.${currentSession.context}`)}
             </span>
 
-            {/* Mode badge */}
-            <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-teal-500/10 text-[11px] font-semibold text-teal-700 dark:text-teal-300 border border-teal-500/30">
-              {currentSession.mode === 'language_to_sign'
-                ? t('mode.langToSign', 'Texte → LSA')
-                : currentSession.mode === 'sign_to_language'
-                ? t('mode.signToLang', 'LSA → Texte')
-                : t('mode.twoWay', 'Bidirectionnel')}
-            </span>
+            {/* Mode selector (visible and accessible on both mobile and desktop) */}
+            <div className="inline-flex items-center">
+              <label htmlFor="workspace-mode-select" className="sr-only">
+                {t('newConv.modeLabel', 'Mode de traduction')}
+              </label>
+              <select
+                id="workspace-mode-select"
+                data-testid="workspace-mode-select"
+                aria-label={t('newConv.modeLabel', 'Mode de traduction')}
+                value={currentSession.mode}
+                onChange={async (e) => {
+                  const newMode = e.target.value as any;
+                  await setSessionMode(newMode);
+                }}
+                className="h-7 px-2 py-0.5 text-[11px] font-semibold rounded-pill bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:border-teal-500/50 focus:outline-none focus:ring-2 focus:ring-app-primary-strong cursor-pointer transition-all"
+              >
+                <option value="two_way">{t('mode.twoWay', 'Double sens')}</option>
+                <option value="sign_to_language">{t('mode.signToLang', 'LSA → Texte')}</option>
+                <option value="language_to_sign">{t('mode.langToSign', 'Texte → LSA')}</option>
+              </select>
+            </div>
           </div>
         </div>
 
