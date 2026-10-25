@@ -8,6 +8,7 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
   private frames: any[] = [];
   private currentLang: SpokenLang = 'fr';
   private baseUrl: string;
+  private currentController: AbortController | null = null;
 
   constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL || PRODUCTION_RENDER_AI_URL) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
@@ -17,7 +18,19 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
     this.baseUrl = url.replace(/\/+$/, '');
   }
 
+  abort(): void {
+    if (this.currentController) {
+      try {
+        this.currentController.abort();
+      } catch {
+        // ignore
+      }
+      this.currentController = null;
+    }
+  }
+
   async start(opts: { lang: SpokenLang }): Promise<void> {
+    this.abort();
     this.currentLang = opts.lang;
     this.frames = [];
   }
@@ -27,6 +40,8 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
   }
 
   async finalize(): Promise<RecognitionResult> {
+    this.abort();
+
     const payload = {
       lang: this.currentLang,
       frames: this.frames,
@@ -39,8 +54,9 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
     while (retries >= 0) {
       try {
         const controller = new AbortController();
-        // Accommodate Render cold starts (free tier spin-up can take 10-15s)
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        this.currentController = controller;
+        // Accommodate Render cold starts (free tier spin-up can take up to 25-30s)
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
 
         const res = await fetch(`${this.baseUrl}/v1/recognize`, {
           method: 'POST',
@@ -50,6 +66,7 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
         });
 
         clearTimeout(timeoutId);
+        this.currentController = null;
 
         if (!res.ok) {
           throw new Error(`HTTP_${res.status}`);
@@ -63,6 +80,7 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
           adapter: 'live',
         };
       } catch (err: any) {
+        this.currentController = null;
         if (retries === 0) {
           this.frames = [];
           if (err.name === 'AbortError') {
@@ -80,6 +98,7 @@ export class HttpSignRecognitionAdapter implements SignRecognitionService {
   }
 
   reset(): void {
+    this.abort();
     this.frames = [];
   }
 }
