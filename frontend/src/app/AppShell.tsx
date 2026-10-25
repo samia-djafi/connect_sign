@@ -105,36 +105,6 @@ export const AppShell: React.FC = () => {
               <span className="hidden lg:inline">{t('nav.twoWay', 'Conversation')}</span>
             </NavLink>
 
-            {/* Focused translation modes (Desktop sub-links) */}
-            <div className="hidden lg:flex flex-col gap-0.5 my-1 ps-3 border-s-2 border-app-border ms-3">
-              <NavLink
-                to="/app/sign-to-language"
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-2.5 py-1 rounded-control text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'bg-app-primary-soft text-app-primary-strong font-bold'
-                      : 'text-app-muted hover:text-app-text hover:bg-app-surface-2'
-                  }`
-                }
-              >
-                <span>🤟</span>
-                <span>{t('mode.signToLang', 'LSA → Texte')}</span>
-              </NavLink>
-              <NavLink
-                to="/app/language-to-sign"
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-2.5 py-1 rounded-control text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'bg-app-primary-soft text-app-primary-strong font-bold'
-                      : 'text-app-muted hover:text-app-text hover:bg-app-surface-2'
-                  }`
-                }
-              >
-                <span>🗣️</span>
-                <span>{t('mode.langToSign', 'Texte → LSA')}</span>
-              </NavLink>
-            </div>
-
             {/* 3. Phrasebook */}
             <NavLink to="/app/phrasebook" className={navLinkClass}>
               <BookOpen className="w-5 h-5 shrink-0" />
