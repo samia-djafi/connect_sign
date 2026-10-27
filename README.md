@@ -1,193 +1,320 @@
-# ConnectSign
-[![Production](https://img.shields.io/badge/Production-Live-0D9488?style=flat&logo=vercel)](https://bridge-sign.vercel.app/app)
-[![WCAG 2.2 AA](https://img.shields.io/badge/A11y-WCAG%202.2%20AA%20Compliant-15803D?style=flat)](frontend/docs/a11y-manual-test.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat&logo=typescript)](frontend/tsconfig.json)
-[![License](https://img.shields.io/badge/License-MIT-gray?style=flat)](#license)
+# ConnectSign - Every Hand Has a Voice.
 
-> **"Every Hand Has a Voice"**<br />
-> *FR: "Chaque main a une voix"*<br />
-> *AR: "لكل يد صوت"*
+[![Live Application](https://img.shields.io/badge/Production-Live%20on%20Vercel-0D9488?style=flat&logo=vercel)](https://bridge-sign.vercel.app/app)
+[![Backend Health](https://img.shields.io/badge/API-Live%20on%20Render-46E3B7?style=flat&logo=render)](https://connect-sign.onrender.com/health)
+[![Frontend Tests](https://img.shields.io/badge/Vitest-113%20Passed-15803D?style=flat&logo=vitest)](frontend/README.md#10-testing-and-quality-checks)
+[![Backend Tests](https://img.shields.io/badge/Pytest-13%20Passed-15803D?style=flat&logo=pytest)](backend/README.md#10-testing-and-validation)
+[![i18n Parity](https://img.shields.io/badge/i18n-730%20Keys%20%7C%20FR%20%E2%80%A2%20AR%20%E2%80%A2%20EN-blue?style=flat)](frontend/README.md#9-localization-and-accessibility)
 
-**ConnectSign** is an installable, offline-first Progressive Web App (PWA) facilitating real-time bidirectional communication between **Algerian Sign Language (LSA)** and spoken/written French, Arabic, and English. Engineered specifically for frontline accessibility scenarios—such as a Deaf patient consulting a pharmacist or medical clinic triage desk without an in-person interpreter.
+> **"Every Hand Has a Voice"**  
+ *FR: "Chaque main a une voix"* 
+ *AR: "لكل يد صوت"*
 
-- **Production Deployment:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
-- **Repository:** [https://github.com/samia-djafi/connect_sign](https://github.com/samia-djafi/connect_sign)
-
----
-
-## 🌟 Key Capabilities
-
-- **Bidirectional Communication Pipeline:**
-  - **Sign $\rightarrow$ Language:** Real-time upper-body and hand landmark vision pipeline, 48-frame temporal windowing, automatic 800ms rest-posture utterance segmentation, contextual French/Arabic sentence synthesis, and high-quality Text-to-Speech (TTS).
-  - **Language $\rightarrow$ Sign:** Spoken voice recognition (Web Speech STT) or text input, medical dosage and duration pattern extraction, fuzzy LSA gloss mapping, and synchronous visual playback via the high-definition `SignPlayer` with multilingual subtitles.
-- **Offline-First Resilience:** Built with Workbox Service Worker pre-caching all UI assets, fonts (`Inter`, `IBM Plex Sans Arabic`), and local sign clips. 100% of conversation history and phrasebook data is persisted locally in IndexedDB (Dexie).
-- **RTL-First Trilingual Support:** Instant zero-reload switching between **Français**, **العربية** (Native Right-to-Left with mirrored UI), and **English**. Fully validated parity across all 698 i18n keys.
-- **Frontline Medical Utility:**
-  - Specialized Healthcare & Pharmacy context models.
-  - Interactive **Emergency Sheet** for rapid one-click medical distress signaling (asthma, severe bleeding, chest pain, allergic reactions).
-  - Categorized **Phrasebook** with offline search, keyboard navigation, and persistent favorites.
-- **Accessible & Inclusive Design:** WCAG 2.2 AA compliant. Strict color contrast ($\ge 5.2:1$ on text), full screen reader live announcements, full keyboard navigation with focus traps, and dedicated High Contrast (`hc`) and Reduced Motion modes.
-- **Local-First Privacy:** Video frames and webcam feeds are processed entirely in memory on the client device. Patient conversations are saved locally in the browser's IndexedDB and never transmitted to external analytics or remote servers.
-- **Honest AI Scope:** Operates on an explicit, statically tracked vocabulary scope (`VOCAB_SIZE: 54` signs in MVP). Transparently labels live adapters vs scripted demo modes and avoids speculative diagnostic claims.
+**ConnectSign** is an installable, offline-first Progressive Web App (PWA) facilitating real-time bidirectional communication between **Algerian Sign Language (LSA / لغة الإشارة الجزائرية)** and spoken or written French, Arabic, and English. Engineered specifically for frontline accessibility encounters—such as a Deaf patient consulting a pharmacist, triage desk, or clinic receptionist without an in-person sign-language interpreter.
 
 ---
 
-## 🏗️ System Architecture
+## 📖 Documentation Directory
+
+ConnectSign is organized as a coordinated documentation system:
+
+| Document | Audience & Scope | Direct Link |
+|---|---|---|
+| **Root README** | Architecture overview, problem statement, verified features, ML status, and quick start | [You are here](README.md) |
+| **Frontend README** | React PWA engineering, IndexedDB storage, localization, PWA offline behavior, and testing | [frontend/README.md](frontend/README.md) |
+| **Backend README** | FastAPI service, CPU inference pipeline, scikit-learn model, API reference, and ML benchmarks | [backend/README.md](backend/README.md) |
+
+---
+
+## 1. The Problem
+
+In frontline healthcare and civic services, Deaf individuals encounter significant communication barriers when seeking medical advice, explaining symptoms, or receiving prescription instructions:
+
+- **Absence of Professional Interpreters:** Certified sign-language interpreters are rarely available on-demand in community pharmacies or emergency clinic triage counters.
+- **Critical Risk of Misunderstanding:** Vital information—such as medication dosages, treatment durations, contraindications, and symptom severity—cannot safely rely on improvised hand gestures or rushed handwriting.
+- **Dialectal & Linguistic Variation:** Algerian Sign Language (LSA) possesses its own distinct visual-spatial grammar, vocabulary, and cultural conventions, differing substantially from spoken Algerian Arabic, Modern Standard Arabic, or French.
+- **Connectivity Gaps:** Rural clinics and basement triage units frequently experience unstable cellular internet, rendering cloud-only translation tools non-viable.
+
+ConnectSign addresses this gap by providing an offline-resilient assistive bridge tailored to everyday medical encounters.
+
+---
+
+## 2. The Solution
+
+ConnectSign provides a structured, bidirectional communication system that connects a client-side Progressive Web App with a CPU-optimized machine-learning backend:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                             CONNECTSIGN PWA                            │
-│                                                                        │
-│   [Deaf User] ────▶  Webcam Ingestion (720p @ 30FPS)                   │
-│                              │                                         │
-│                      MediaPipe Vision Pipeline                         │
-│                      (Pose + 21 Hand Landmarks)                        │
-│                              │                                         │
-│                      48-Frame Sliding Window                           │
-│                              │                                         │
-│                      ISignRecognitionAdapter                           │
-│                      ├─ Mock Adapter (Client Demo Scripting)           │
-│                      └─ HTTP / WebSocket Adapter (Edge AI Service)     │
-│                              │                                         │
-│                      800ms Rest Segmentation & Gloss Buffer            │
-│                              │                                         │
-│                      Natural Language Generation                       │
-│                              │                                         │
-│                      Confirmation Card & Audio TTS ────▶ [Hearing User]│
-│                                                                        │
-│   [Hearing User] ─▶  Speech STT / Text Input                           │
-│                              │                                         │
-│                      Text Normalization & Slot Duration Extraction     │
-│                              │                                         │
-│                      Fuzzy Damerau-Levenshtein Gloss Matcher           │
-│                              │                                         │
-│                      SignPlayer Engine (Video Clips + Canvas Avatar)   │
-│                              │                                         │
-│                      Multilingual Captions ────────────▶ [Deaf User]   │
-└────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             CONNECTSIGN SYSTEM                              │
+│                                                                             │
+│   [Deaf Patient] ──────▶  Webcam Landmark Tracking (MediaPipe Tasks)        │
+│                                      │                                      │
+│                           16-Frame Temporal Window                          │
+│                                      │                                      │
+│                           ISignRecognitionAdapter                           │
+│                           ├── Mock Adapter (Offline Scripted Demo)          │
+│                           └── HTTP Adapter (FastAPI Backend / Linear SVC)   │
+│                                      │                                      │
+│                           Uncertainty Gating (Threshold: 0.12)              │
+│                                      │                                      │
+│                           Human Review & Confirmation Card                  │
+│                                      │                                      │
+│                           Spoken Speech Synthesis (TTS) ──▶ [Hearing Staff] │
+│                                                                             │
+│   [Hearing Staff] ─────▶  Voice Speech-to-Text (STT) or Typed Input         │
+│                                      │                                      │
+│                           Slot Extraction (Dosage & Duration Patterns)      │
+│                                      │                                      │
+│                           Fuzzy Damerau-Levenshtein Gloss Matcher           │
+│                                      │                                      │
+│                           SignPlayer Component (LSA Clips / Honest Fallback)│
+│                                      │                                      │
+│                           Synchronized Subtitles (FR / AR / EN) ──▶ [Patient│
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Distinction of Capabilities
+- **Curated Linguistic Content:** A structured phrasebook of 87 healthcare and emergency phrases and an essential vocabulary mapping provide verified, deterministic translations that operate completely offline.
+- **Machine-Learning Recognition:** A calibrated Linear SVM model classifies 32 isolated Algerian Sign Language signs from 16-frame landmark trajectories with strict uncertainty rejection.
+- **Assistive Scope (Not Continuous Translation):** ConnectSign recognizes individual isolated signs within fixed windows and translates structured phrases. It is **not** an autonomous general-purpose continuous sign-language translator, and it strictly avoids speculative medical diagnostics.
+
+---
+
+## 3. Key Features
+
+| Feature | Description | Current Status |
+|---|---|---|
+| **Frontline Medical Phrasebook** | 87 categorized healthcare phrases (symptoms, medication, appointments, emergencies) with instant trilingual search. | **Implemented & Verified** |
+| **Trilingual RTL/LTR Localization** | Instant switching between French, Arabic (native RTL with layout mirroring), and English across 730 synchronized keys. | **Implemented & Verified** |
+| **Offline-First PWA Storage** | Workbox pre-caching for application assets; all conversation transcripts and favorites persist locally in IndexedDB (Dexie). | **Implemented & Verified** |
+| **Emergency Distress Sheet** | One-click emergency signaling sheet for critical symptoms (chest pain, breathing difficulty, severe bleeding, allergic reaction). | **Implemented & Verified** |
+| **Text-to-Sign Engine** | Medical dosage pattern extraction (e.g. "2 comprimés par jour") and fuzzy LSA gloss sequence mapping. | **Implemented & Verified** |
+| **LSA Visual Playback (`SignPlayer`)** | Sequence player with speed control and subtitles; displays honest status card while studio video recordings are in production. | **Implemented with Limitations** |
+| **Isolated Sign Recognition** | 32-class Linear SVM classifying 16-frame spatio-temporal landmark windows with uncertainty rejection gating. | **Implemented & Verified** |
+| **Spoken Audio Synthesis (TTS)** | Text-to-speech audio playback for hearing staff with automatic language detection and graceful fallback. | **Implemented & Verified** |
+| **Continuous Sign Translation** | Multi-sentence unsegmented continuous sign-to-text recognition without temporal pauses. | **Planned / Not Implemented** |
+
+---
+
+## 4. Product Demonstration & Verified Assets
+
+- **Live Production App:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
+- **Live Backend API Health:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
+- **Application Icon Asset:** [`frontend/public/icons/logo-mark.png`](frontend/public/icons/logo-mark.png)
+
+```
+        ╔═══════════════════════════════════════════════════╗
+        ║                  ConnectSign                      ║
+        ║        Every Hand Has a Voice • لكل يد صوت        ║
+        ║                                                   ║
+        ║   [ Sign → Speech ]           [ Speech → Sign ]   ║
+        ║   Camera Recognition          Text & Voice Input  ║
+        ║   MediaPipe Landmarks         Dosage Extraction   ║
+        ║   Human Confirmation          LSA SignPlayer      ║
+        ╚═══════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 📁 Repository Structure
+## 5. System Architecture
+
+```mermaid
+graph TD
+    subgraph Client["Client Browser (Progressive Web App)"]
+        UI["React 18 User Interface (Tailwind CSS)"]
+        MediaPipe["MediaPipe Vision (Hands + Pose)"]
+        NLP["Text-to-Sign & Slot Parser"]
+        DexieDB[("IndexedDB (connectsign)")]
+        Adapter{"ISignRecognitionAdapter"}
+        MockAdapter["Mock Adapter (Demo / Offline)"]
+        HttpAdapter["HTTP Adapter (Axios / Fetch)"]
+    end
+
+    subgraph Server["AI Recognition Backend (FastAPI on Render)"]
+        Endpoint["POST /v1/recognize"]
+        Sampler["FrameSampler (16 Frames)"]
+        Extractor["LandmarkFeatureExtractor (3,453 Dimensions)"]
+        Classifier["SignClassifier (LinearSVC + Scaler)"]
+        PhraseService["PhraseService (21 Seed Templates)"]
+    end
+
+    UI --> MediaPipe
+    UI --> NLP
+    UI --> DexieDB
+    MediaPipe --> Adapter
+    Adapter -->|VITE_AI_ADAPTER=mock| MockAdapter
+    Adapter -->|VITE_AI_ADAPTER=http| HttpAdapter
+    HttpAdapter -->|JSON Frames| Endpoint
+
+    Endpoint --> Sampler
+    Sampler --> Extractor
+    Extractor --> Classifier
+    Classifier --> PhraseService
+    PhraseService --> Endpoint
+    Endpoint -->|RecognitionResponse| HttpAdapter
+    HttpAdapter --> UI
+```
+
+---
+
+## 6. Technology Stack
+
+| Domain | Technology | Purpose |
+|---|---|---|
+| **Frontend Framework** | React 18 & TypeScript 5.7 | Component architecture and static typing |
+| **Build & PWA** | Vite 5 & `vite-plugin-pwa` | Rapid bundling and Workbox service worker generation |
+| **Styling** | Tailwind CSS 3.4 | Accessible, responsive utility styling with high-contrast tokens |
+| **Local Storage** | Dexie.js 4.0 | Typed IndexedDB client persistence with 5-second soft delete |
+| **Localization** | i18next & react-i18next | Trilingual translation engine with RTL layout synchronization |
+| **Backend API** | FastAPI 0.115 & Uvicorn 0.30 | High-performance asynchronous REST API |
+| **Machine Learning** | scikit-learn 1.4 & NumPy 1.26 | Linear Support Vector Classifier (`LinearSVC`) with probability estimation |
+| **Vision Tracking** | MediaPipe Tasks 0.10 & OpenCV | Hand and upper-body landmark extraction running on CPU |
+| **Testing** | Vitest 2.1 & Pytest 8.0 | Comprehensive unit and integration test coverage |
+
+---
+
+## 7. Machine-Learning Status
+
+The ConnectSign AI recognition pipeline operates under strict empirical boundaries:
+
+- **Model Architecture:** Calibrated Linear Support Vector Classifier (`LinearSVC`, $C=0.5$, $L_2$ penalty, `dual=False`) paired with `StandardScaler` and softmax probability estimation.
+- **Dataset Source:** VDzSL Benchmark (Zenodo DOI: `10.5281/zenodo.18209839`, PMC12925472).
+- **Training Population:** 4 Avatars across 5 camera viewpoints (20 verified samples per class; 448 training samples, 96 test samples).
+- **Feature Representation:** Spatio-temporal normalized coordinate trajectories spanning 16 frames across 21 hand keypoints and upper-body pose joints ($D = 3{,}453$ features).
+- **Evaluation Evidence (from `backend/models/config.json`):**
+  - **Holdout Test Accuracy:** 67.71%
+  - **Macro F1 Score:** 66.16%
+  - **Mean Inference Latency:** 1.15 ms on CPU
+- **Uncertainty Rejection:** Predictions below the 0.12 confidence threshold are rejected with an explicit prompt (`"Sign not recognized. Please try again."`) to prevent hallucinated gestures.
+- **Active Vocabulary:** 32 verified Algerian Sign Language classes, including the 10 MVP healthcare signs (*HELP*, *PAIN*, *EMERGENCY*, *WATER*, *THANK_YOU*, *FEVER*, *SICK*, *HEADACHE*, *PLEASE*, *YES*).
+
+For complete technical specifications, see [backend/README.md#8-machine-learning-pipeline](backend/README.md#8-machine-learning-pipeline).
+
+---
+
+## 8. Quick Start
+
+ConnectSign's frontend and backend can run independently or together:
+
+### Option A: Run the Frontend (Self-Contained)
+The frontend runs out of the box using its built-in mock adapter or pointing to the live cloud backend:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/samia-djafi/connect_sign.git
+cd connect_sign/frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Start development server
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Option B: Run the Backend Locally
+To run live machine-learning inference locally on CPU:
+
+```bash
+# 1. Navigate to backend and configure environment
+cd connect_sign/backend
+python -m venv .venv
+
+# Windows:
+.\.venv\Scripts\Activate.ps1
+# Linux / macOS:
+# source .venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements-dev.txt
+
+# 3. Start the API server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+The API documentation will be available at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+To connect your local frontend to your local backend, edit `frontend/.env`:
+```ini
+VITE_AI_ADAPTER=http
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+---
+
+## 9. Project Structure
 
 ```
 connect_sign/
-├── .gitignore                    # Root repository ignore rules
-├── README.md                     # Root project documentation
-├── vercel.json                   # Root deployment & HTTP security headers configuration
-└── frontend/                     # Core React PWA application
-    ├── docs/                     # Technical documentation & ADRs
-    ├── public/                   # Static assets, PWA icons, offline manifest
-    ├── scripts/                  # Development & verification scripts
-    ├── src/
-    │   ├── app/                  # App shell, routing, error boundary, providers
-    │   ├── components/
-    │   │   ├── domain/           # Domain-specific components (Camera, Audio, Timeline, etc.)
-    │   │   └── ui/               # Reusable accessible UI primitives (Modal, Sheet, Button, etc.)
-    │   ├── data/                 # Contexts, vocabulary, model card, stories data
-    │   ├── features/             # Feature views (Workspace, Phrasebook, History, Settings, etc.)
-    │   ├── hooks/                # Camera & recognition hooks
-    │   ├── i18n/                 # Trilingual localization dictionaries (FR, AR, EN)
-    │   ├── lib/                  # Utilities (A11y, confidence, normalization, timing)
-    │   ├── services/             # IndexedDB repository, audio, recognition adapters
-    │   ├── stores/               # Zustand state stores
-    │   └── test/                 # Vitest automated test suite
-    ├── package.json              # Dependencies and lifecycle scripts
-    └── vite.config.ts            # Vite & Workbox PWA configuration
+├── .gitignore                    # Root git exclusion rules
+├── README.md                     # Root project documentation (this file)
+├── frontend/                     # Progressive Web App (React + TypeScript + Vite)
+│   ├── docs/                     # Technical specifications, ADRs, test protocols
+│   ├── public/                   # Static assets, PWA icons, signs manifest
+│   ├── scripts/                  # i18n audit and icon generation scripts
+│   ├── src/                      # Source code (app, components, data, features, services)
+│   ├── package.json              # Frontend dependencies and npm lifecycle scripts
+│   ├── vite.config.ts            # Vite bundler and Workbox PWA configuration
+│   └── README.md                 # Detailed frontend engineering reference
+└── backend/                      # Inference API service (FastAPI + scikit-learn)
+    ├── app/                      # Application entrypoint, routers, services, schemas
+    ├── models/                   # Classifier weights, MediaPipe tasks, class mappings
+    ├── scripts/                  # Model inspection and dev startup tools
+    ├── tests/                    # Automated pytest test suites
+    ├── render.yaml               # Render cloud deployment blueprint
+    ├── requirements.txt          # Production runtime dependencies
+    └── README.md                 # Detailed backend and ML inference reference
 ```
 
 ---
 
-## 🚀 Quick Start
+## 10. Limitations and Roadmap
 
-### Prerequisites
-- Node.js $\ge 18.0.0$ (Tested on Node v20 & v24)
-- npm $\ge 9.0.0$
+### Current Limitations
+1. **Isolated Sign Scope:** Machine-learning recognition processes individual signs within a 16-frame window. It does not parse continuous unpunctuated sign sentences.
+2. **Synthetic Avatar Benchmark:** The underlying VDzSL model was trained on 3D avatars; real-world webcam video requires adequate lighting and minimal hand occlusion.
+3. **Sign Video Assets in Production:** Curated LSA video clips are cataloged in `frontend/public/signs/manifest.json` as placeholders while studio recordings with the Algerian Deaf community are completed.
+4. **Assistive Communication Framing:** ConnectSign facilitates human communication; it does not diagnose illnesses or calculate medication doses.
 
-### 1. Clone & Install
-```bash
-git clone https://github.com/samia-djafi/connect_sign.git
-cd connect_sign/frontend
-npm install
-```
-
-### 2. Configure Environment
-Copy the example environment configuration:
-```bash
-cp .env.example .env
-```
-
-| Variable | Description | Default |
-|---|---|---|
-| `VITE_APP_NAME` | Application display name | `ConnectSign` |
-| `VITE_AI_ADAPTER` | Active recognition adapter (`mock` \| `http`) | `mock` |
-| `VITE_API_BASE_URL` | Base endpoint for REST AI inference | `http://localhost:8000` |
-| `VITE_WS_URL` | WebSocket streaming endpoint | `ws://localhost:8000/ws/recognize` |
-| `VITE_CONFIDENCE_THRESHOLD` | Minimum score to consider gesture detected | `0.70` |
-| `VITE_CONFIDENCE_HIGH` | High-confidence visual threshold | `0.85` |
-| `VITE_SEQUENCE_FRAMES` | Temporal frame window size | `48` |
-| `VITE_APP_VERSION` | Application semver string | `0.1.0` |
-
-### 3. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) (or Vite port [http://localhost:5173](http://localhost:5173)) in your browser.
+### Future Roadmap
+- [ ] Incorporate CTC / transformer temporal models for continuous multi-sign sequence recognition.
+- [ ] Expand video clip asset library with verified recordings across multiple Algerian wilayas.
+- [ ] Implement on-device WebAssembly / ONNX inference for zero-network camera recognition.
+- [ ] Integrate hospital triage electronic health record (EHR) export templates.
 
 ---
 
-## 🛠️ Verification & Quality Scripts
+## 11. Testing and Verification
+
+ConnectSign enforces rigorous automated and manual quality checks:
 
 ```bash
+# Frontend verification (Vitest test suite)
 cd frontend
+npm run test          # 17 test files, 113 tests passed
+npm run typecheck     # Strict TypeScript validation (0 errors)
+npm run i18n:check    # 730 keys synchronized across FR, AR, EN
 
-# Run complete test suite (Vitest)
-npm run test
-
-# Run tests in continuous watch mode
-npm run test:watch
-
-# Verify strict TypeScript type safety
-npm run typecheck
-
-# Check i18n translation key parity across FR, AR, EN
-npm run i18n:check
-
-# Build production bundle with PWA service worker
-npm run build
-
-# Preview production build locally
-npm run preview
+# Backend verification (Pytest suite)
+cd ../backend
+pytest tests/ -v      # 13 tests passed across 4 test modules
 ```
 
 ---
 
-## 🔒 Security & Privacy Guarantees
+## 12. Contribution, License, and Acknowledgments
 
-- **No Remote Video Streaming:** Camera streams are processed locally in browser memory via MediaPipe and canvas overlays. No images or videos are transmitted to remote servers.
-- **Client-Side Data Storage:** Conversation history and notes are saved strictly in IndexedDB (`connectsign`, with automatic idempotent backward compatibility for legacy `lsa-bridge`) and localStorage on the user's device.
-- **Content Security Policy (CSP):** Configured in `vercel.json` with strict directives for scripts, styles, fonts, and network connections.
-- **Clickjacking Protection:** Protected via `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'`.
-- **MIME Sniffing Prevention:** `X-Content-Type-Options: nosniff`.
-- **Safe Feedback Ingestion:** Feedback submissions are securely posted directly to Google Forms via background requests without user tracking.
+### Consultation and Attribution
+- **Community Partnership:** ConnectSign is designed in consultation with the Algerian Deaf community to respect the linguistic dignity and dialectal variations of Algerian Sign Language (LSA).
+- **Dataset Attribution:** Machine-learning models are trained on the VDzSL benchmark (Zenodo DOI: `10.5281/zenodo.18209839`, PMC12925472).
+- **License:** Project documentation and code are provided for academic, research, and non-profit accessibility evaluation. (Model card: Apache-2.0; repository root contains no separate proprietary restrictions).
 
 ---
 
-## 📚 Technical Documentation
+## 13. Project Links
 
-Comprehensive engineering documents are located in the [`frontend/docs/`](frontend/docs) directory:
-- [Architecture & Design Details](frontend/docs/architecture.md)
-- [REST & WebSocket API Contracts](frontend/docs/api-contract.md)
-- [Architecture Decision Records (ADRs)](frontend/docs/decisions.md)
-- [LSA Video Recording & Asset Production Guide](frontend/docs/sign-clips-guide.md)
-- [3-Minute Live Jury Demonstration Script](frontend/docs/jury-demo-script.md)
-- [Manual Accessibility (A11y) Verification Protocol](frontend/docs/a11y-manual-test.md)
-
----
-
-## 🤝 Community & Ethical Statement
-
-ConnectSign is developed in active partnership and consultation with the Algerian Deaf community. All sign assets, gloss definitions, and regional variants adhere to cultural consensus across Algerian wilayas.
-
-ConnectSign is **not** a medical diagnostic tool or a human interpreter replacement; it is an assistive communication bridge designed to ensure equity, privacy, and safety in healthcare encounters.
+- **Repository:** [https://github.com/samia-djafi/connect_sign](https://github.com/samia-djafi/connect_sign)
+- **Production Web Application:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
+- **Production Backend Telemetry:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
+- **Frontend Reference:** [frontend/README.md](frontend/README.md)
+- **Backend Reference:** [backend/README.md](backend/README.md)
+- **Architecture Decisions:** [frontend/docs/decisions.md](frontend/docs/decisions.md)
