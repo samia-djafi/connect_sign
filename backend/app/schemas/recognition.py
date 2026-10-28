@@ -7,18 +7,21 @@ from pydantic import BaseModel, Field
 
 
 class NormalizedLandmark(BaseModel):
+    """Normalized MediaPipe 3D coordinate (x, y normalized to [0, 1], z depth relative)."""
     x: float
     y: float
     z: Optional[float] = 0.0
 
 
 class LandmarkFrame(BaseModel):
+    """Single captured frame containing timestamp and detected hands/pose landmark points."""
     t: Optional[int] = 0
     hands: Optional[List[List[NormalizedLandmark]]] = []
     pose: Optional[List[NormalizedLandmark]] = []
 
 
 class RecognitionRequest(BaseModel):
+    """Inference request payload containing video frames or serialized landmark arrays."""
     frames: List[Any] = Field(
         ...,
         max_length=120,
@@ -32,6 +35,7 @@ class RecognitionRequest(BaseModel):
 
 
 class DetectedSign(BaseModel):
+    """Recognized sign token with associated confidence metrics."""
     gloss: str = Field(..., description="Canonical gloss token matching frontend vocabulary.")
     confidence: float = Field(..., description="Normalized confidence probability (0.0 to 1.0).")
     level: str = Field(..., description="Confidence tier: 'high', 'medium', or 'low'.")
@@ -39,6 +43,7 @@ class DetectedSign(BaseModel):
 
 
 class CandidatePrediction(BaseModel):
+    """Model classification prediction candidate with multilingual meaning lookups."""
     label: str
     score: float
     meaning_en: Optional[str] = None
