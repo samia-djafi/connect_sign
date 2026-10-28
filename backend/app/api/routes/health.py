@@ -15,8 +15,10 @@ router = APIRouter(tags=["Health"])
 @router.get("/", response_model=HealthResponse)
 async def check_health() -> HealthResponse:
     """
-    Health and readiness probe.
-    Explicitly reports whether the AI model is loaded and ready for live inference.
+    Health and readiness probe endpoint.
+
+    Evaluates backend service status, model checkpoint readiness, and active vocabulary classes.
+    Returns status 'ok' when the ML inference pipeline is fully initialized and 'degraded' otherwise.
     """
     model_loaded = inference_service.is_ready
     active_count = len(inference_service.target_names) if model_loaded else 0
