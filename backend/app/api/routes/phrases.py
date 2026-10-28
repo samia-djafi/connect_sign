@@ -11,12 +11,18 @@ router = APIRouter(prefix="/v1", tags=["Phrases"])
 
 
 class MatchRequest(BaseModel):
+    """Payload representing a captured sequence of recognized gloss tokens to align."""
     signs: List[str] = Field(..., description="Ordered list of sign gloss tokens.")
 
 
 @router.get("/phrases")
 async def list_phrases() -> Dict[str, Any]:
-    """Returns all 45 seed phrase templates and vocabulary coverage status."""
+    """
+    Retrieve phrasebook templates and vocabulary coverage.
+
+    Returns the complete list of predefined medical and frontline phrase templates,
+    including their translations in French, Arabic, and English along with associated sign glosses.
+    """
     if inference_service.phrase_service:
         return inference_service.phrase_service.list_phrases()
     return {"total_phrases": 0, "phrases": []}
@@ -24,7 +30,12 @@ async def list_phrases() -> Dict[str, Any]:
 
 @router.post("/match")
 async def match_phrase(request: MatchRequest) -> Dict[str, Any]:
-    """Matches a sequence of recognized signs against phrasebook templates."""
+    """
+    Match recognized gloss sequences against phrasebook templates.
+
+    Compares input gloss tokens against known medical phrase sequences using subsequence
+    and exact alignment algorithms to suggest suitable natural language sentence completions.
+    """
     if inference_service.phrase_service:
         matches = inference_service.phrase_service.match_signs(request.signs)
         return {"matches": matches}
