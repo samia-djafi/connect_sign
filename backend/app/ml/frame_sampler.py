@@ -30,7 +30,15 @@ class FrameSampler:
         self.grayscale = grayscale
 
     def compute_frame_indices(self, total_frames: int) -> np.ndarray:
-        """Compute deterministic uniform frame indices."""
+        """
+        Compute deterministic uniform frame indices across the sequence duration.
+
+        Args:
+            total_frames: Total number of frames available in the source sequence.
+
+        Returns:
+            np.ndarray: Array of integer indices of length self.num_frames.
+        """
         if total_frames <= 0:
             raise ValueError(f"total_frames must be > 0, got {total_frames}")
 
@@ -47,7 +55,16 @@ class FrameSampler:
             )
 
     def sample_from_frames(self, frames: List[np.ndarray]) -> np.ndarray:
-        """Sample uniformly from a pre-loaded list of numpy image frames."""
+        """
+        Sample uniformly from a pre-loaded list of numpy image frames,
+        applying target sizing, optional grayscale conversion, and pixel normalization.
+
+        Args:
+            frames: List of input numpy BGR/RGB image arrays.
+
+        Returns:
+            np.ndarray: 4D tensor with shape (num_frames, height, width, channels).
+        """
         if not frames:
             raise ValueError("No frames provided to sample_from_frames")
 
