@@ -1,3 +1,10 @@
+/**
+ * Triggers a browser file download using an ephemeral Blob object URL.
+ *
+ * @param filename - Target file name including extension (e.g. 'export.json').
+ * @param content - String contents to download.
+ * @param contentType - MIME type string (defaults to 'text/plain').
+ */
 export function downloadFile(filename: string, content: string, contentType: string = 'text/plain') {
   if (typeof document === 'undefined') return;
 
