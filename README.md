@@ -1,28 +1,16 @@
 # ConnectSign - Every Hand Has a Voice.
 
-[![Live Application](https://img.shields.io/badge/Production-Live%20on%20Vercel-0D9488?style=flat&logo=vercel)](https://bridge-sign.vercel.app/app)
+[![Live Application](https://img.shields.io/badge/Production-Live%20on%20Vercel-0D9488?style=flat&logo=vercel)](https://connect-sign-nine.vercel.app/)
 [![Backend Health](https://img.shields.io/badge/API-Live%20on%20Render-46E3B7?style=flat&logo=render)](https://connect-sign.onrender.com/health)
 [![Frontend Tests](https://img.shields.io/badge/Vitest-113%20Passed-15803D?style=flat&logo=vitest)](frontend/README.md#10-testing-and-quality-checks)
 [![Backend Tests](https://img.shields.io/badge/Pytest-13%20Passed-15803D?style=flat&logo=pytest)](backend/README.md#10-testing-and-validation)
 [![i18n Parity](https://img.shields.io/badge/i18n-730%20Keys%20%7C%20FR%20%E2%80%A2%20AR%20%E2%80%A2%20EN-blue?style=flat)](frontend/README.md#9-localization-and-accessibility)
 
-> **"Every Hand Has a Voice"**  
- *FR: "Chaque main a une voix"* 
- *AR: "لكل يد صوت"*
+>**"Every Hand Has a Voice"**  
+>**"Chaque main a une voix"**        
+>**"لكل يد صوت"**
 
-**ConnectSign** is an installable, offline-first Progressive Web App (PWA) facilitating real-time bidirectional communication between **Algerian Sign Language (LSA / لغة الإشارة الجزائرية)** and spoken or written French, Arabic, and English. Engineered specifically for frontline accessibility encounters—such as a Deaf patient consulting a pharmacist, triage desk, or clinic receptionist without an in-person sign-language interpreter.
-
----
-
-## 📖 Documentation Directory
-
-ConnectSign is organized as a coordinated documentation system:
-
-| Document | Audience & Scope | Direct Link |
-|---|---|---|
-| **Root README** | Architecture overview, problem statement, verified features, ML status, and quick start | [You are here](README.md) |
-| **Frontend README** | React PWA engineering, IndexedDB storage, localization, PWA offline behavior, and testing | [frontend/README.md](frontend/README.md) |
-| **Backend README** | FastAPI service, CPU inference pipeline, scikit-learn model, API reference, and ML benchmarks | [backend/README.md](backend/README.md) |
+**ConnectSign** is an installable, offline-first Progressive Web App (PWA) facilitating real-time bidirectional communication between **Algerian Sign Language** and spoken or written French, Arabic, and English. Engineered specifically for frontline accessibility encounters such as a Deaf patient consulting a pharmacist, triage desk, or clinic receptionist without an in-person sign-language interpreter.
 
 ---
 
@@ -69,7 +57,7 @@ ConnectSign provides a structured, bidirectional communication system that conne
 │                                      │                                      │
 │                           SignPlayer Component (LSA Clips / Honest Fallback)│
 │                                      │                                      │
-│                           Synchronized Subtitles (FR / AR / EN) ──▶ [Patient│
+│           Synchronized Subtitles (FR / AR / EN) ──▶ [Patient│
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -98,9 +86,8 @@ ConnectSign provides a structured, bidirectional communication system that conne
 
 ## 4. Product Demonstration & Verified Assets
 
-- **Live Production App:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
+- **Live Production App:** [https://connect-sign-nine.vercel.app/](https://connect-sign-nine.vercel.app/)
 - **Live Backend API Health:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
-- **Application Icon Asset:** [`frontend/public/icons/logo-mark.png`](frontend/public/icons/logo-mark.png)
 
 ```
         ╔═══════════════════════════════════════════════════╗
@@ -278,8 +265,6 @@ connect_sign/
 ### Future Roadmap
 - [ ] Incorporate CTC / transformer temporal models for continuous multi-sign sequence recognition.
 - [ ] Expand video clip asset library with verified recordings across multiple Algerian wilayas.
-- [ ] Implement on-device WebAssembly / ONNX inference for zero-network camera recognition.
-- [ ] Integrate hospital triage electronic health record (EHR) export templates.
 
 ---
 
@@ -301,13 +286,14 @@ pytest tests/ -v      # 13 tests passed across 4 test modules
 
 ---
 
-## 12. Contribution, License, and Acknowledgments
+## 12. Project Links
 
-### Development & Contributor Workflow
-- **Commit Convention:** Use Conventional Commits format (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-- **Frontend Code Standards:** Run `npm run typecheck` and `npm run test` before opening pull requests to ensure TypeScript types and Vitest tests pass cleanly.
-- **Backend Code Standards:** Ensure `pytest tests/ -v` passes with all routes and ML services validated.
-- **Internationalization:** Maintain translation key parity across `fr.json`, `ar.json`, and `en.json` using `npm run i18n:check`.
+- **Repository:** [https://github.com/samia-djafi/connect_sign](https://github.com/samia-djafi/connect_sign)
+- **Production Web Application:** [https://connect-sign-nine.vercel.app/](https://connect-sign-nine.vercel.app/)
+- **Production Backend Telemetry:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
+
+
+## 13. Contribution, License, and Acknowledgments
 
 ### Consultation and Attribution
 - **Community Partnership:** ConnectSign is designed in consultation with the Algerian Deaf community to respect the linguistic dignity and dialectal variations of Algerian Sign Language (LSA).
@@ -316,11 +302,10 @@ pytest tests/ -v      # 13 tests passed across 4 test modules
 
 ---
 
-## 13. Project Links
+## Acknowledgments
 
-- **Repository:** [https://github.com/samia-djafi/connect_sign](https://github.com/samia-djafi/connect_sign)
-- **Production Web Application:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
-- **Production Backend Telemetry:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
-- **Frontend Reference:** [frontend/README.md](frontend/README.md)
-- **Backend Reference:** [backend/README.md](backend/README.md)
-- **Architecture Decisions:** [frontend/docs/decisions.md](frontend/docs/decisions.md)
+🎓 Developed as the final project of **Thirduni**, a program by the **U.S. Embassy in Algeria**.
+
+🤝 Special thanks to the researchers, dataset creators, and open-source contributors advancing **Algerian Sign Language technology** and accessible communication.
+
+💚 **ConnectSign - Every Hand Has a Voice.**
