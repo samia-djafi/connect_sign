@@ -10,6 +10,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """
+    Application settings loaded from environment variables and defaults.
+    Configures server host, port, CORS policies, model paths, and ML thresholds.
+    """
     PROJECT_NAME: str = "ConnectSign AI Recognition API"
     VERSION: str = "0.2.0"
     API_V1_STR: str = "/v1"
@@ -30,6 +34,10 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="after")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        """
+        Normalize CORS origins list, supporting comma-separated strings or JSON arrays.
+        Ensures both http and https variants are accepted for trusted frontend hosts.
+        """
         default_origins = [
             "http://localhost:5173",
             "http://localhost:3000",
