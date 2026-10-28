@@ -1,3 +1,9 @@
+/**
+ * Dynamically announces messages to assistive screen readers via an ARIA live region.
+ *
+ * @param message - Text announcement string for the screen reader.
+ * @param priority - 'polite' (waits for idle) or 'assertive' (interrupts immediately).
+ */
 export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
   if (typeof document === 'undefined') return;
 
@@ -32,6 +38,11 @@ export function announceToScreenReader(message: string, priority: 'polite' | 'as
   }, 50);
 }
 
+/**
+ * Dispatches a lightweight tactile vibration feedback on supported mobile devices.
+ *
+ * @param durationMs - Vibration pulse duration in milliseconds (default 40ms).
+ */
 export function triggerHaptic(durationMs: number = 40) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
