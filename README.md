@@ -303,6 +303,12 @@ pytest tests/ -v      # 13 tests passed across 4 test modules
 
 ## 12. Contribution, License, and Acknowledgments
 
+### Development & Contributor Workflow
+- **Commit Convention:** Use Conventional Commits format (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+- **Frontend Code Standards:** Run `npm run typecheck` and `npm run test` before opening pull requests to ensure TypeScript types and Vitest tests pass cleanly.
+- **Backend Code Standards:** Ensure `pytest tests/ -v` passes with all routes and ML services validated.
+- **Internationalization:** Maintain translation key parity across `fr.json`, `ar.json`, and `en.json` using `npm run i18n:check`.
+
 ### Consultation and Attribution
 - **Community Partnership:** ConnectSign is designed in consultation with the Algerian Deaf community to respect the linguistic dignity and dialectal variations of Algerian Sign Language (LSA).
 - **Dataset Attribution:** Machine-learning models are trained on the VDzSL benchmark (Zenodo DOI: `10.5281/zenodo.18209839`, PMC12925472).
