@@ -1,3 +1,8 @@
+/**
+ * Formats duration in milliseconds to MM:SS stopwatch string.
+ * @param ms - Duration in milliseconds.
+ * @returns Zero-padded string in MM:SS format.
+ */
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -5,6 +10,12 @@ export function formatDuration(ms: number): string {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Formats timestamp to HH:mm localized time string.
+ * @param timestamp - Epoch millisecond timestamp.
+ * @param locale - BCP 47 language code (defaults to 'fr').
+ * @returns Formatted 24-hour time string.
+ */
 export function formatTimeOnly(timestamp: number, locale: string = 'fr'): string {
   try {
     return new Intl.DateTimeFormat(locale, {
@@ -18,6 +29,12 @@ export function formatTimeOnly(timestamp: number, locale: string = 'fr'): string
   }
 }
 
+/**
+ * Formats timestamp to full localized date and time string.
+ * @param timestamp - Epoch millisecond timestamp.
+ * @param locale - BCP 47 language code (defaults to 'fr').
+ * @returns Localized date and time string.
+ */
 export function formatDateFull(timestamp: number, locale: string = 'fr'): string {
   try {
     return new Intl.DateTimeFormat(locale, {
@@ -33,6 +50,12 @@ export function formatDateFull(timestamp: number, locale: string = 'fr'): string
   }
 }
 
+/**
+ * Computes human-readable relative time (e.g. 'just now', '5m ago').
+ * @param timestamp - Epoch millisecond timestamp.
+ * @param locale - BCP 47 language code ('fr', 'ar', 'en').
+ * @returns Localized relative time description.
+ */
 export function formatRelativeTime(timestamp: number, locale: string = 'fr'): string {
   const diffMs = Date.now() - timestamp;
   const diffSec = Math.floor(diffMs / 1000);
