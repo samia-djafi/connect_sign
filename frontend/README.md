@@ -1,16 +1,14 @@
-# ConnectSign Frontend — Progressive Web App (PWA)
+# ConnectSign Frontend - Progressive Web App (PWA)
 
 [![Frontend Tests](https://img.shields.io/badge/Vitest-113%20Passed-15803D?style=flat&logo=vitest)](src/test/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat&logo=typescript)](tsconfig.json)
 [![i18n Parity](https://img.shields.io/badge/i18n-730%20Keys%20%7C%20FR%20%E2%80%A2%20AR%20%E2%80%A2%20EN-blue?style=flat)](scripts/check-i18n.js)
 [![PWA](https://img.shields.io/badge/PWA-Workbox%20%2F%20Offline%20First-0D9488?style=flat&logo=pwa)](vite.config.ts)
-[![Production](https://img.shields.io/badge/Vercel-Live-black?style=flat&logo=vercel)](https://bridge-sign.vercel.app/app)
+[![Production](https://img.shields.io/badge/Vercel-Live-black?style=flat&logo=vercel)](https://connect-sign-nine.vercel.app/)
 
-The client application for **ConnectSign — Every Hand Has a Voice**, an installable, offline-first Progressive Web App built with React, TypeScript, and Vite. ConnectSign facilitates bidirectional communication between Algerian Sign Language (LSA / لغة الإشارة الجزائرية) signers and hearing non-signers in frontline medical and pharmacy settings.
+The client application for **ConnectSign - Every Hand Has a Voice**, an installable, offline-first Progressive Web App built with React, TypeScript, and Vite. ConnectSign facilitates bidirectional communication between Algerian Sign Language signers and hearing non-signers in frontline medical and pharmacy settings.
 
-- **Production Application:** [https://bridge-sign.vercel.app/app](https://bridge-sign.vercel.app/app)
-- **Backend Documentation:** [../backend/README.md](../backend/README.md)
-- **Root Repository Overview:** [../README.md](../README.md)
+- **Production Application:** [https://connect-sign-nine.vercel.app/](https://connect-sign-nine.vercel.app/)
 
 ---
 
@@ -364,3 +362,11 @@ npm run i18n:check
 - **Architecture Decision Records:** [docs/decisions.md](docs/decisions.md)
 - **Manual Accessibility Protocol:** [docs/a11y-manual-test.md](docs/a11y-manual-test.md)
 - **LSA Studio Recording Guide:** [docs/sign-clips-guide.md](docs/sign-clips-guide.md)
+
+## Acknowledgments
+
+🎓 Developed as the final project of **Thirduni**, a program by the **U.S. Embassy in Algeria**.
+
+🤝 Special thanks to the researchers, dataset creators, and open-source contributors advancing **Algerian Sign Language technology** and accessible communication.
+
+💚 **ConnectSign - Every Hand Has a Voice.**
