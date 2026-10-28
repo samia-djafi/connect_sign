@@ -1,15 +1,13 @@
-# ConnectSign AI — FastAPI Recognition Backend
+# ConnectSign AI - FastAPI Recognition Backend
 
 [![Backend Tests](https://img.shields.io/badge/Pytest-13%20Passed-15803D?style=flat&logo=pytest)](tests/)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.14-blue?style=flat&logo=python)](requirements.txt)
 [![Framework](https://img.shields.io/badge/Framework-FastAPI%200.115+-009688?style=flat&logo=fastapi)](app/main.py)
 [![Deployment](https://img.shields.io/badge/Render-Live-46E3B7?style=flat&logo=render)](https://connect-sign.onrender.com/health)
 
-A CPU-optimized, local-first inference backend for **ConnectSign — Every Hand Has a Voice**, providing isolated sign recognition for Algerian Sign Language (LSA / لغة الإشارة الجزائرية) in frontline medical and pharmacy settings.
+A CPU-optimized, local-first inference backend for **ConnectSign - Every Hand Has a Voice**, providing isolated sign recognition for Algerian Sign Language in frontline medical and pharmacy settings.
 
 - **Production Health Probe:** [https://connect-sign.onrender.com/health](https://connect-sign.onrender.com/health)
-- **Frontend Repository:** [../frontend/README.md](../frontend/README.md)
-- **Root Project Overview:** [../README.md](../README.md)
 
 ---
 
@@ -428,48 +426,6 @@ curl -X POST http://localhost:8000/v1/match \
   - **Macro F1 Score:** 66.16%
   - **Mean Inference Latency:** 1.15 ms on CPU
 
-### Active 32-Class Vocabulary
-The model supports 32 verified Arabic sign classes, covering the 10 MVP healthcare target signs:
-
-| # | Arabic Label | Frontend Gloss | Concept / Translation |
-|---|---|---|---|
-| 1 | `1` | `ONCE` | One / Once |
-| 2 | `2` | `TWICE` | Two / Twice |
-| 3 | `3` | `3` | Three |
-| 4 | `أذن` | `EAR` | Ear |
-| 5 | **`ألم`** *(MVP)* | `PAIN` | Pain |
-| 6 | `إبرة` | `INJECTION` | Needle / Injection |
-| 7 | `الآن` | `NOW` | Now / Immediately |
-| 8 | `الليل` | `NIGHT` | Night |
-| 9 | `بشرة` | `SKIN` | Skin |
-| 10 | `جسم` | `BODY` | Body |
-| 11 | **`حرارة`** *(MVP)* | `FEVER` | Fever / Heat |
-| 12 | `حسنا` | `OK` | Okay / Fine |
-| 13 | **`خطر`** *(MVP)* | `EMERGENCY` | Danger / Emergency |
-| 14 | **`رأس`** *(MVP)* | `HEAD` / `HEADACHE` | Head / Headache |
-| 15 | `سكر` | `SUGAR` | Sugar / Diabetes |
-| 16 | **`شكرا`** *(MVP)* | `THANK_YOU` | Thank you |
-| 17 | `صباح` | `MORNING` | Morning |
-| 18 | `طبيب أسنان` | `DENTIST` | Dentist |
-| 19 | `طعام` | `EAT` | Food / Meal |
-| 20 | `قلب` | `HEART` | Heart |
-| 21 | `كحول` | `ALCOHOL` | Alcohol / Antiseptic |
-| 22 | `كل يوم` | `DAY` | Every day / Daily |
-| 23 | `كم` | `HOW-LONG` | How much / How long |
-| 24 | `لا` | `NO` | No |
-| 25 | **`ماء`** *(MVP)* | `WATER` | Water |
-| 26 | `مال` | `PRICE` | Money / Price |
-| 27 | **`مريض`** *(MVP)* | `SICK` | Sick / Patient |
-| 28 | **`من فضلك`** *(MVP)* | `PLEASE` | Please |
-| 29 | `نصف` | `HALF` | Half |
-| 30 | **`نعم`** *(MVP)* | `YES` | Yes |
-| 31 | `يد` | `HAND` | Hand |
-| 32 | **`يساعد`** *(MVP)* | `HELP` | Help / Assist |
-
-> **Linguistic Scope & Missing Signs**: Specific concepts such as *Doctor*, *Medicine*, *Pharmacy*, *Hospital*, and *Allergy* were absent from the underlying VDzSL benchmark dataset. Under clinical accessibility safety rules, unrelated gestures are **never** relabeled to fabricate unsupported concepts. Missing concepts remain in the frontend phrasebook via curated text and manual selection rather than speculative vision recognition.
-
----
-
 ## 9. Model Artifacts and Data Requirements
 
 All required model files reside in the `backend/models/` directory and are tracked directly in the repository:
@@ -555,3 +511,11 @@ On free cloud tiers (such as Render Free), the web service may spin down after i
 - **Architecture & System Decisions:** See [../frontend/docs/architecture.md](../frontend/docs/architecture.md) and [../frontend/docs/decisions.md](../frontend/docs/decisions.md).
 - **Root Repository Overview:** See [../README.md](../README.md).
 - **Dataset Attribution:** VDzSL Algerian Sign Language dataset (Zenodo DOI: `10.5281/zenodo.18209839`).
+
+## Acknowledgments
+
+🎓 Developed as the final project of **Thirduni**, a program by the **U.S. Embassy in Algeria**.
+
+🤝 Special thanks to the researchers, dataset creators, and open-source contributors advancing **Algerian Sign Language technology** and accessible communication.
+
+💚 **ConnectSign - Every Hand Has a Voice.**
