@@ -1,5 +1,9 @@
 import { normalizeText, tokenize } from './text-normalize';
 
+/**
+ * Computes Damerau-Levenshtein edit distance between two strings,
+ * accounting for insertions, deletions, substitutions, and adjacent transpositions.
+ */
 export function damerauLevenshteinDistance(a: string, b: string): number {
   const al = a.length;
   const bl = b.length;
@@ -32,6 +36,9 @@ export function damerauLevenshteinDistance(a: string, b: string): number {
   return matrix[al]![bl]!;
 }
 
+/**
+ * Computes normalized similarity score (0.0 to 1.0) based on Damerau-Levenshtein distance.
+ */
 export function stringSimilarity(a: string, b: string): number {
   const normA = normalizeText(a);
   const normB = normalizeText(b);
@@ -46,6 +53,9 @@ export function stringSimilarity(a: string, b: string): number {
   return Math.max(0, 1 - distance / maxLen);
 }
 
+/**
+ * Computes Jaccard index similarity between token sets of two strings.
+ */
 export function tokenSetSimilarity(a: string, b: string): number {
   const tokensA = new Set(tokenize(a));
   const tokensB = new Set(tokenize(b));
