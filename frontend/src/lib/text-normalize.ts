@@ -1,3 +1,13 @@
+/**
+ * Normalizes input text across Latin and Arabic scripts for deterministic fuzzy matching.
+ *
+ * Strips French/Latin combining diacritics, strips Arabic harakat (tashkeel),
+ * standardizes Alef / Taa Marbuta / Alif Maqsura orthographic variants, removes tatweel,
+ * and collapses punctuation into single whitespace separators.
+ *
+ * @param text - Raw input string.
+ * @returns Cleaned and canonicalized text string.
+ */
 export function normalizeText(text: string): string {
   if (!text) return '';
 
@@ -28,6 +38,12 @@ export function normalizeText(text: string): string {
   return normalized;
 }
 
+/**
+ * Splits normalized text into individual non-empty word tokens.
+ *
+ * @param text - Input string to tokenize.
+ * @returns Array of word tokens.
+ */
 export function tokenize(text: string): string[] {
   const norm = normalizeText(text);
   return norm.length > 0 ? norm.split(' ') : [];
