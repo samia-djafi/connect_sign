@@ -88,7 +88,7 @@
      - Active Adapter: `MockSignRecognitionAdapter` (labeled honestly as Demo)
      - Vision pipeline FPS: 30 FPS stable
      - IndexedDB persistence: 4 tables, zero server leaks
-  3. Show the **Vocabulary Scope**: clearly displaying *"MVP vocabulary: 54 signs"*, not making false claims of universal translation.
+  3. Show the **Vocabulary Scope**: clearly distinguishing between the 54-sign interface phrasebook and the 32-sign ML recognition model, avoiding misleading claims of continuous universal translation.
   4. Open DevTools $\rightarrow$ Network $\rightarrow$ toggle **Offline**.
   5. Refresh the page: the application loads instantaneously from the Service Worker cache with full IndexedDB history intact.
 - **Concluding Sentence:**  
