@@ -58,7 +58,7 @@ class RecognitionResponse(BaseModel):
     frames: int = 0
     latencyMs: int = 0
     model: Dict[str, str] = Field(
-        default_factory=lambda: {"name": "BridgeSign-LSA-Landmark", "version": "0.2.0"}
+        default_factory=lambda: {"name": "ConnectSign-LSA-Landmark", "version": "0.2.0"}
     )
     adapter: str = "live"
     isUncertain: bool = True
