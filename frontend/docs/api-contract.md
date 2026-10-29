@@ -2,160 +2,189 @@
 
 ## 1. Overview
 
-ConnectSign operates on a decoupled adapter architecture. In MVP mode, client requests are routed through a client-side mock adapter or a backend AI inference service adhering to the contracts detailed below.
+ConnectSign operates on a decoupled adapter architecture. Recognition requests are routed through either a local mock adapter (`MockSignRecognitionAdapter` for offline testing and demos) or a remote/local HTTP inference backend (`HttpSignRecognitionAdapter`) adhering to the contracts detailed below.
 
-- **Base URL (REST):** `http://localhost:8000/v1` (configured via `VITE_API_BASE_URL`)
-- **WebSocket URL:** `ws://localhost:8000/ws/recognize` (configured via `VITE_WS_URL`)
+- **Base URL (Production Render):** `https://connect-sign.onrender.com` (configured via `VITE_API_BASE_URL`)
+- **Base URL (Local Development):** `http://localhost:8000`
 - **Content-Type:** `application/json`
-- **Protocol SLA:** End-to-end inference latency $\le$ 200ms per window; WebSocket streaming latency $\le$ 80ms.
+- **Inference Latency Target:** $< 500$ ms on CPU for 16-frame window.
 
 ---
 
-## 2. Authentication & Headers
+## 2. Service Separation & Client vs Server Roles
 
-Production endpoints require a Bearer token or device session header:
+To ensure high availability in frontline clinical environments with intermittent connectivity, responsibilities are cleanly divided:
 
-```http
-Authorization: Bearer <JWT_OR_API_KEY>
-X-Client-Version: 0.1.0
-X-Device-Platform: web-pwa
+| Service | Execution Environment | Role |
+|---|---|---|
+| **Isolated Sign Classification** | FastAPI Backend (`POST /v1/recognize`) | 32-class LinearSVC classification from 16-frame MediaPipe landmark sequences or base64 image bursts |
+| **System Readiness & Telemetry** | FastAPI Backend (`GET /health`) | Model checkpoint status, loaded class count, device target |
+| **Phrase Catalog & Matching** | FastAPI Backend (`GET /v1/phrases`, `POST /v1/match`) & Client | 21 backend seed templates / 87 frontend healthcare phrases |
+| **Text-to-Sign & Slot Parsing** | Client-Side (`src/services/text-to-sign.ts`) | Regex medical dosage extraction and fuzzy Damerau-Levenshtein gloss mapping |
+| **Sentence Synthesis (NLG)** | Client-Side (`src/services/language-generation.ts`) | Rule-based grammar synthesis in French, Arabic, and English |
+| **Speech Audio (TTS & STT)** | Client-Side (`src/services/speech.ts`) | Web Speech API synthesis and recognition |
+| **Local Persistence** | Client-Side (`src/services/db.ts`) | Dexie IndexedDB storing sessions, messages, and favorites |
+
+---
+
+## 3. REST Endpoints (FastAPI Backend)
+
+### 3.1 Health & Readiness Probe
+
+- **Endpoint:** `GET /health` (also aliased at `GET /`)
+- **Purpose:** Verifies operational health, model loading state, and active vocabulary size.
+
+#### Response (200 OK — Ready)
+```json
+{
+  "status": "ok",
+  "service": "ConnectSign AI Recognition API",
+  "version": "0.2.0",
+  "model_loaded": true,
+  "model_name": "ConnectSign-LSA-Landmark-SVM",
+  "active_vocabulary_classes": 32,
+  "device": "cpu",
+  "timestamp": 1729851234.56
+}
+```
+
+#### Response (200 OK — Degraded / Weights Missing)
+```json
+{
+  "status": "degraded",
+  "service": "ConnectSign AI Recognition API",
+  "version": "0.2.0",
+  "model_loaded": false,
+  "model_name": null,
+  "active_vocabulary_classes": 0,
+  "device": "cpu",
+  "timestamp": 1729851234.56
+}
 ```
 
 ---
 
-## 3. REST Endpoints
+### 3.2 Recognize Sign Sequence
 
-### 3.1 Recognize Sign Sequence
+- **Endpoint:** `POST /v1/recognize`
+- **Purpose:** Ingests video frames (base64 image strings) or serialized landmark dictionaries, extracts 3,453 spatio-temporal features, evaluates LinearSVC decision scores, applies uncertainty gating, and returns the predicted sign.
 
-**Endpoint:** `POST /v1/recognize`  
-**Description:** Evaluates a sequence of normalized landmark frames and returns recognized LSA signs with confidence metrics.
-
-#### Request Body
+#### Request Schema (`RecognitionRequest`)
 ```json
 {
-  "contextId": "healthcare-pharmacy",
-  "windowFrames": 48,
-  "fps": 30,
-  "landmarks": [
+  "lang": "fr",
+  "frames": [
     {
-      "frameIndex": 0,
-      "timestamp": 1728420000123,
-      "pose": [
-        { "x": 0.512, "y": 0.342, "z": -0.012, "visibility": 0.99 }
-      ],
-      "leftHand": [
-        { "x": 0.420, "y": 0.610, "z": -0.005 }
-      ],
-      "rightHand": [
-        { "x": 0.580, "y": 0.450, "z": -0.020 }
-      ]
+      "t": 0,
+      "hands": [[{"x": 0.5, "y": 0.5, "z": 0.0}]],
+      "pose": [{"x": 0.5, "y": 0.3, "z": 0.0}]
     }
   ]
 }
 ```
 
-#### Response (200 OK)
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `frames` | Array | Yes | Array of base64 image strings or `LandmarkFrame` dictionaries (1 to 120 frames). Typical sequence: 16 frames. |
+| `lang` | String | No | Target spoken language context (`fr`, `ar`, `en`). Defaults to `fr`. |
+
+#### Response (200 OK — Confident Recognition)
 ```json
 {
-  "success": true,
-  "timestamp": 1728420000500,
-  "inferenceMs": 42.5,
-  "results": [
-    {
-      "glossId": "HEADACHE",
-      "label": {
-        "fr": "Mal de tête / Céphalée",
-        "ar": "صداع / ألم في الرأس",
-        "en": "Headache"
-      },
-      "confidence": 0.942,
-      "tier": "high",
-      "timestampStart": 1728420000123,
-      "timestampEnd": 1728420000450
-    }
-  ],
-  "alternatives": [
-    {
-      "glossId": "FEVER",
-      "confidence": 0.124
-    }
-  ]
-}
-```
-
----
-
-### 3.2 Synthesize Sentence from Glosses
-
-**Endpoint:** `POST /v1/generate`  
-**Description:** Synthesizes a natural, grammatically correct spoken/written sentence from confirmed LSA glosses for a given context and target language.
-
-#### Request Body
-```json
-{
-  "glosses": ["HEADACHE", "PAIN_SEVERE", "MEDICINE_WANT"],
-  "targetLanguage": "fr",
-  "contextId": "healthcare-pharmacy",
-  "tone": "polite"
-}
-```
-
-#### Response (200 OK)
-```json
-{
-  "sentence": "J'ai un violent mal de tête, avez-vous un médicament approprié ?",
-  "language": "fr",
-  "confidence": 0.96,
-  "alternativeSentences": [
-    "J'ai très mal à la tête et j'ai besoin d'un médicament."
-  ],
-  "latencyMs": 85.0
-}
-```
-
----
-
-### 3.3 Text to Sign Gloss Sequence
-
-**Endpoint:** `POST /v1/text-to-sign`  
-**Description:** Translates spoken or typed natural language into an ordered sequence of LSA glosses, parsing dosage and duration metadata when present.
-
-#### Request Body
-```json
-{
-  "text": "Prenez deux comprimés par jour pendant 5 jours",
-  "sourceLanguage": "fr",
-  "contextId": "healthcare-pharmacy"
-}
-```
-
-#### Response (200 OK)
-```json
-{
-  "matched": true,
-  "confidence": 0.98,
-  "strategy": "pattern-extraction",
-  "glossSequence": ["TAKE_PILL", "DOSE_TWO", "PER_DAY", "DURATION_FIVE_DAYS"],
   "signs": [
     {
-      "glossId": "TAKE_PILL",
-      "duration": 1800,
-      "clipUrl": "/signs/take_pill.webm",
-      "caption": {
-        "fr": "Prendre le comprimé",
-        "ar": "تناول القرص",
-        "en": "Take pill"
-      }
+      "gloss": "HELP",
+      "confidence": 0.88,
+      "level": "high",
+      "atMs": 250
+    }
+  ],
+  "sequence": ["HELP"],
+  "overallConfidence": 0.88,
+  "level": "high",
+  "frames": 16,
+  "latencyMs": 250,
+  "model": {
+    "name": "ConnectSign-LSA-Landmark",
+    "version": "0.2.0"
+  },
+  "adapter": "live",
+  "isUncertain": false,
+  "rawPredictedLabel": "يساعد",
+  "matchedPhrase": {
+    "id": "ph_emergency_help",
+    "category": "emergency",
+    "text": {
+      "fr": "Aidez-moi c'est une urgence !",
+      "ar": "ساعدوني إنها حالة طارئة!",
+      "en": "Help me it's an emergency!"
     },
+    "gloss": ["HELP", "EMERGENCY"]
+  },
+  "supportStatus": "FULL_RECOGNITION",
+  "topCandidates": [
+    { "label": "يساعد", "score": 0.88 },
+    { "label": "خطر", "score": 0.05 },
+    { "label": "ماء", "score": 0.02 }
+  ],
+  "rejectionMessage": null
+}
+```
+
+#### Response (200 OK — Uncertain / Rejection)
+When the prediction score falls below `UNCERTAINTY_THRESHOLD` (0.12):
+```json
+{
+  "signs": [],
+  "sequence": [],
+  "overallConfidence": 0.0,
+  "level": "low",
+  "frames": 16,
+  "latencyMs": 180,
+  "model": {
+    "name": "ConnectSign-LSA-Landmark",
+    "version": "0.2.0"
+  },
+  "adapter": "live",
+  "isUncertain": true,
+  "rawPredictedLabel": "ماء",
+  "matchedPhrase": null,
+  "supportStatus": "NO_MATCH",
+  "topCandidates": [
+    { "label": "ماء", "score": 0.085 },
+    { "label": "خطر", "score": 0.071 },
+    { "label": "يد", "score": 0.062 }
+  ],
+  "rejectionMessage": "Sign not recognized. Please try again."
+}
+```
+
+#### HTTP Error Status Codes
+- `422 Unprocessable Entity`: Request body is missing required `frames` or frames count exceeds 120.
+- `503 Service Unavailable`: Backend model artifacts are not initialized.
+
+---
+
+### 3.3 List Seed Phrases
+
+- **Endpoint:** `GET /v1/phrases`
+- **Purpose:** Returns the 21 healthcare seed phrases configured in backend phrase service.
+
+#### Response (200 OK)
+```json
+{
+  "total_phrases": 21,
+  "phrases": [
     {
-      "glossId": "DOSE_TWO",
-      "duration": 1400,
-      "clipUrl": "/signs/dose_two.webm",
-      "caption": {
-        "fr": "2 comprimés",
-        "ar": "قرصان",
-        "en": "2 pills"
-      }
+      "id": "ph_headache",
+      "category": "symptoms",
+      "text": {
+        "fr": "J'ai mal à la tête.",
+        "ar": "عندي صداع في الرأس.",
+        "en": "I have a headache."
+      },
+      "gloss": ["HEADACHE"],
+      "contexts": ["healthcare"]
     }
   ]
 }
@@ -163,82 +192,32 @@ X-Device-Platform: web-pwa
 
 ---
 
-## 4. WebSocket Streaming Protocol (`/ws/recognize`)
+## 4. Frontend Adapter Interface (`ISignRecognitionAdapter`)
 
-For real-time continuous tracking, the client establishes a bidirectional WebSocket channel.
+Defined in `frontend/src/types/services.ts`:
 
-### 4.1 Client Initialization
-```json
-{
-  "type": "INIT_SESSION",
-  "sessionId": "ses_01j7xyz...",
-  "contextId": "healthcare-pharmacy",
-  "modelTier": "edge-light",
-  "fps": 30
+```typescript
+export interface SignRecognitionService {
+  readonly adapter: 'live' | 'demo';
+  start(opts: { lang: SpokenLang }): Promise<void>;
+  push(frame: LandmarkFrame | any): void;
+  finalize(): Promise<RecognitionResult>;
+  reset(): void;
+  abort?(): void;
 }
 ```
 
-### 4.2 Client Frame Packet (Every frame or keyframe)
-```json
-{
-  "type": "FRAME_LANDMARKS",
-  "seq": 1042,
-  "timestamp": 1728420002100,
-  "handsDetected": 2,
-  "landmarks": {
-    "pose": [[0.5, 0.3, 0.0], [0.52, 0.32, 0.01]],
-    "leftHand": [[0.4, 0.6, 0.0]],
-    "rightHand": [[0.6, 0.5, -0.01]]
-  }
-}
-```
-
-### 4.3 Server Recognition Stream Packet
-```json
-{
-  "type": "RECOGNITION_EVENT",
-  "seq": 1042,
-  "status": "recognizing",
-  "currentSign": {
-    "glossId": "HEADACHE",
-    "confidence": 0.91,
-    "tier": "high"
-  },
-  "temporalSegment": {
-    "isComplete": false,
-    "elapsedMs": 1400
-  }
-}
-```
-
-### 4.4 Server Utterance Complete Packet
-Triggered by 800ms of rest posture or explicit end gesture:
-```json
-{
-  "type": "UTTERANCE_COMPLETE",
-  "sessionId": "ses_01j7xyz...",
-  "glossSequence": ["GREETING", "HEADACHE", "PAIN"],
-  "proposedSentence": {
-    "fr": "Bonjour, j'ai mal à la tête.",
-    "ar": "مرحباً، لدي ألم في الرأس.",
-    "en": "Hello, I have a headache."
-  },
-  "overallConfidence": 0.93
-}
-```
+### Adapter Implementations:
+- **`HttpSignRecognitionAdapter` (`adapter: 'live'`):** Accumulates frames during gesture capture and executes HTTP `POST /v1/recognize`. Configured with a 25-second timeout and retry logic for Render free tier wakeups.
+- **`MockSignRecognitionAdapter` (`adapter: 'demo'`):** Standalone offline simulation matching realistic gesture timings for automated UI testing and connectivity-free presentations.
 
 ---
 
-## 5. Error Code Catalog
+## 5. Client Error Handling Matrix
 
-| Error Code | HTTP Status | Description | User-Facing Action |
+| Error Code | Origin | Description | User-Facing Action |
 |---|---|---|---|
-| `ERR-1001` | 400 | Invalid landmark vector dimensionality | Client resets MediaPipe vision pipeline |
-| `ERR-1002` | 422 | Context ID unsupported or unknown | Client falls back to generic context |
-| `ERR-2001` | 404 | Sign clip not found in manifest | SignPlayer renders animated fallback avatar |
-| `ERR-3001` | 408 | WebSocket frame timeout (>2000ms silent) | Client attempts reconnection |
-| `ERR-4001` | 429 | Rate limit exceeded (>60 FPS burst) | Client throttles frame decimation |
-| `ERR-5001` | 503 | Inference engine warming up / unavailable | Client switches to local mock fallback |
-| `CAM-001`  | N/A | Camera permission denied by user | Show permission guide modal |
-| `CAM-002`  | N/A | Camera hardware in use by another app | Display device busy error |
-| `CAM-003`  | N/A | Overconstrained video resolution | Re-negotiate down to 640x480 |
+| `AI-002` | `HttpSignRecognitionAdapter` | Request timed out (25 seconds) | Displays server wakeup guidance |
+| `AI-004` | `HttpSignRecognitionAdapter` | Backend unreachable / network down | Displays offline notice; user can retry or switch to demo mode |
+| `CAM-001` | `useCamera` | Camera access denied by user | Displays permission recovery modal |
+| `CAM-002` | `useCamera` | Camera device in use or missing | Recommends checking device settings |
