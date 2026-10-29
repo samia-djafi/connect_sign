@@ -7,7 +7,7 @@ import { normalizeText } from '@/lib/text-normalize';
 import { combinedScore } from '@/lib/fuzzy';
 
 const FAVORITES_STORAGE_KEY = 'connectsign-phrasebook-favorites';
-const LEGACY_FAVORITES_STORAGE_KEY = 'bridgesign-phrasebook-favorites';
+const LEGACY_FAVORITES_STORAGE_KEY = 'lsab-phrasebook-favorites';
 
 class AppPhrasebookService implements PhrasebookService {
   private phrases: Phrase[] = SEED_PHRASES;
