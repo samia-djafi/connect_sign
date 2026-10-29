@@ -45,9 +45,11 @@ Computer vision inference on edge devices varies wildly across Android devices, 
 Healthcare applications often make hyperbolic claims regarding AI capabilities, which is dangerous in medical settings where misunderstanding dosage or symptoms can lead to severe harm.
 
 ### Decision
-- The application dynamically reads vocabulary size (`VOCAB_SIZE`) directly from `src/data/vocabulary.config.ts` (currently 54 signs) and displays: *"MVP vocabulary: 54 signs"*.
+- The application clearly distinguishes between the interface vocabulary and the ML recognition model:
+  - **Interface & Phrasebook Vocabulary:** 54 signs cataloged in `src/data/vocabulary.config.ts` for text-to-sign slot matching and dictionary display.
+  - **Machine-Learning Recognition Model:** 32 verified isolated sign classes trained on the VDzSL benchmark and served by the LinearSVC inference backend.
 - The UI strictly avoids diagnostic language (e.g. "Diagnosed with..."). All system-generated text uses communication framing: *"The person communicated: ..."*.
-- Model evaluation metrics are reported with full honesty in `src/data/model-card.json`.
+- Model evaluation metrics and confidence mechanisms are reported with full technical honesty in `src/data/model-card.json`.
 
 ### Consequences
 - (+) Establishes credibility with medical professionals, disability advocates, and jury members.
@@ -80,7 +82,7 @@ Arabic is an official language of Algeria and the primary spoken/written languag
 
 ### Decision
 - Replaced directional Tailwind utilities (`mr-*`, `ml-*`, `pl-*`, `pr-*`, `left-*`, `right-*`) with logical properties (`me-*`, `ms-*`, `ps-*`, `pe-*`, `start-*`, `end-*`, `text-start`, `text-end`).
-- Integrated `react-i18next` with complete key parity across `fr.json`, `ar.json`, and `en.json` (306 keys verified via automated CI script).
+- Integrated `react-i18next` with complete key parity across `fr.json`, `ar.json`, and `en.json` (730 keys verified via automated CI script).
 - Bi-directional directional icons (arrows, chevrons) flip in RTL via `rtl:-scale-x-100`.
 - Arabic typography uses self-hosted `IBM Plex Sans Arabic`, while Latin uses variable `Inter`.
 
