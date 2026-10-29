@@ -33,7 +33,7 @@ interface LocalFeedbackEntry {
 }
 
 const LOCAL_FEEDBACK_KEY = 'connectsign-local-feedback';
-const LEGACY_LOCAL_FEEDBACK_KEY = 'bridgesign-local-feedback';
+const LEGACY_LOCAL_FEEDBACK_KEY = 'cs-legacy-local-feedback';
 
 // Google Form constants
 export const GOOGLE_FORM_VIEW_URL =
