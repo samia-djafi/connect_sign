@@ -264,7 +264,7 @@ class InferenceService:
             level=conf_level if not is_uncertain else "low",
             frames=len(frames_data),
             latencyMs=latency_ms,
-            model={"name": "BridgeSign-LSA-Landmark", "version": "0.2.0"},
+            model={"name": "ConnectSign-LSA-Landmark", "version": "0.2.0"},
             adapter="live",
             isUncertain=is_uncertain,
             rawPredictedLabel=top1_label,
