@@ -102,7 +102,7 @@ backend/
 │   ├── __init__.py
 │   └── main.py                        # FastAPI application entrypoint and lifespan
 ├── models/
-│   ├── best_model.joblib              # Calibrated LinearSVC classifier (~833 KB)
+│   ├── best_model.joblib              # LinearSVC classifier (~833 KB)
 │   ├── config.json                    # Hyperparameters, feature dimensions, evaluation metrics
 │   ├── mvp_classes.json               # 32 active classes mapping (ID <-> Arabic label)
 │   ├── hand_landmarker.task           # MediaPipe Hand landmarker model (~7.8 MB)
@@ -214,7 +214,7 @@ The settings parser automatically handles trailing slashes, JSON-stringified arr
   "service": "ConnectSign AI Recognition API",
   "version": "0.2.0",
   "model_loaded": true,
-  "model_name": "BridgeSign-LSA-Landmark-SVM",
+  "model_name": "ConnectSign-LSA-Landmark-SVM",
   "active_vocabulary_classes": 32,
   "device": "cpu",
   "timestamp": 1729851234.56
@@ -270,7 +270,7 @@ curl -X GET http://localhost:8000/health
   "frames": 16,
   "latencyMs": 18,
   "model": {
-    "name": "BridgeSign-LSA-Landmark",
+    "name": "ConnectSign-LSA-Landmark",
     "version": "0.2.0"
   },
   "adapter": "live",
@@ -306,7 +306,7 @@ curl -X GET http://localhost:8000/health
   "frames": 16,
   "latencyMs": 15,
   "model": {
-    "name": "BridgeSign-LSA-Landmark",
+    "name": "ConnectSign-LSA-Landmark",
     "version": "0.2.0"
   },
   "adapter": "live",
@@ -416,7 +416,8 @@ curl -X POST http://localhost:8000/v1/match \
 ## 8. Machine-Learning Pipeline
 
 ### Model Specification
-- **Classifier:** Calibrated Linear Support Vector Classifier (`LinearSVC`, $C=0.5$, $L_2$ penalty, `dual=False`) wrapped with `StandardScaler` and softmax decision score estimation.
+- **Classifier:** Linear Support Vector Classifier (`LinearSVC`, $C=0.5$, $L_2$ penalty, `dual=False`) wrapped with `StandardScaler` and softmax transformation over signed margin decision scores (uncalibrated probability approximation).
+- **Uncertainty Decision Mechanism:** Softmax scores below `UNCERTAINTY_THRESHOLD = 0.12` trigger rejection (`isUncertain: true`, `"Sign not recognized. Please try again."`), abstaining from prediction on ambiguous or low-confidence inputs. Scores $\ge 0.22$ are marked `high`, $\ge 0.12$ are marked `medium`.
 - **Dataset Source:** VDzSL Benchmark (Zenodo DOI: `10.5281/zenodo.18209839`, PMC12925472).
 - **Training Population:** 4 Avatars (`signer0` through `signer3`) recorded across 5 viewpoints (`cam0` through `cam4`), providing 20 verified samples per class.
 - **Sample Distribution:** 448 training samples, 96 holdout test samples.
