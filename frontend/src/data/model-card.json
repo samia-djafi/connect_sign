@@ -1,18 +1,29 @@
 {
-  "name": "LSA-Sequence-TCN-Lite",
-  "version": "0.1.0-mvp",
-  "architecture": "Temporal Sequence Classifier (MediaPipe HandLandmarker + Lite BiLSTM)",
-  "input": "Hand landmarks (2 × 21 × 3) + Selected upper-body pose landmarks (4 points)",
-  "output": "Algerian Sign Language (LSA) isolated & phrase gloss classes",
-  "vocabularySize": 54,
+  "name": "ConnectSign-LSA-Landmark-SVM",
+  "version": "0.2.0",
+  "architecture": "Linear Support Vector Classifier (LinearSVC, C=0.5, L2 penalty) with StandardScaler and Spatio-Temporal Trajectory Features (3,453 dimensions)",
+  "input": "16-frame normalized landmark sequence: MediaPipe HandLandmarker (2 × 21 × 3) + MediaPipe PoseLandmarker (7 upper-body joints)",
+  "output": "Algerian Sign Language (LSA) isolated sign classification across 32 vocabulary classes",
+  "vocabularySize": 32,
+  "uiPhrasebookSize": 54,
   "languageLayer": ["fr", "ar", "en"],
-  "evaluation": null,
+  "evaluation": "VDzSL Benchmark Holdout: 67.7% Accuracy, 66.2% Macro F1, 1.15 ms CPU Latency (448 train / 96 test samples across 4 avatars and 5 viewpoints; Zenodo DOI: 10.5281/zenodo.18209839). Formal frontline clinical trials are in planning.",
+  "evaluationMetrics": {
+    "testAccuracy": 0.6771,
+    "testMacroF1": 0.6616,
+    "meanLatencyMs": 1.15,
+    "trainSamples": 448,
+    "testSamples": 96,
+    "dataset": "VDzSL Benchmark (Zenodo DOI: 10.5281/zenodo.18209839, PMC12925472)"
+  },
+  "confidenceMechanism": "Softmax-normalized LinearSVC decision scores with empirical uncertainty threshold of 0.12 (uncalibrated probability approximation; inputs below threshold are safely rejected)",
   "license": "Apache-2.0",
-  "intendedUse": "Assistive communication tool in emergency and healthcare settings with strict human confirmation before transmission.",
+  "intendedUse": "Assistive communication tool in frontline healthcare and civic encounters with human-in-the-loop confirmation before transmission.",
   "knownLimitations": [
     "Controlled lighting conditions required (avoids strong backlighting)",
-    "Signing must remain within camera view frame (no occlusion)",
-    "Co-articulation variation between individual signers",
-    "Current MVP models do not parse non-manual facial markers or mouthing"
+    "Signing must remain within camera view frame with minimal hand occlusion",
+    "Model was trained on synthetic avatar benchmarks; natural signer co-articulation and camera angles may yield lower real-world accuracy",
+    "Processes isolated individual signs in 16-frame temporal windows; continuous unsegmented signing is not supported",
+    "Current model parses upper-body and hand landmarks only; it does not parse non-manual facial expressions or mouthing"
   ]
 }
