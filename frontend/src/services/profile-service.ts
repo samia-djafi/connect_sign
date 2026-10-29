@@ -2,7 +2,7 @@ import { LocalProfile, ProfileStorageService } from '@/types/profile';
 import { generateId } from '@/lib/ids';
 
 export const PROFILE_STORAGE_KEY = 'connectsign-profile';
-export const LEGACY_PROFILE_STORAGE_KEY = 'bridgesign-profile';
+export const LEGACY_PROFILE_STORAGE_KEY = 'lsab-profile';
 
 // Safe in-memory fallback cache when localStorage is disabled or throws
 let memoryProfileCache: LocalProfile | null = null;
