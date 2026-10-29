@@ -28,7 +28,7 @@ async def check_health() -> HealthResponse:
         service="ConnectSign AI Recognition API",
         version=settings.VERSION,
         model_loaded=model_loaded,
-        model_name="BridgeSign-LSA-Landmark-SVM" if model_loaded else None,
+        model_name="ConnectSign-LSA-Landmark-SVM" if model_loaded else None,
         active_vocabulary_classes=active_count,
         device=settings.DEVICE,
         timestamp=time.time(),
