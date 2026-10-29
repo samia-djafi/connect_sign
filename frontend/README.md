@@ -187,7 +187,7 @@ frontend/
 │   ├── components/
 │   │   ├── domain/                   # Domain components (CameraPanel, SignPlayer, EmergencySheet)
 │   │   └── ui/                       # Accessible primitives (Button, Modal, Sheet, Toast, Kbd)
-│   ├── data/                         # Phrasebook (87 items), vocabulary (54 signs), demo data
+│   ├── data/                         # Phrasebook (87 items), UI vocabulary (54 signs), demo data
 │   ├── features/                     # Page view features (workspace, phrasebook, history, etc.)
 │   ├── hooks/                        # React hooks (useCamera, useRecognitionMachine)
 │   ├── i18n/                         # Trilingual localization dictionaries (fr.json, ar.json, en.json)
