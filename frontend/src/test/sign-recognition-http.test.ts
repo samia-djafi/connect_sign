@@ -61,7 +61,7 @@ describe('HttpSignRecognitionAdapter', () => {
       overallConfidence: 0.88,
       level: 'high',
       frames: 1,
-      model: { name: 'BridgeSign-LSA-Landmark', version: '0.2.0' },
+      model: { name: 'ConnectSign-LSA-Landmark', version: '0.2.0' },
       adapter: 'live',
       isUncertain: false,
     };
