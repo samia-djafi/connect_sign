@@ -28,7 +28,7 @@ class Settings(BaseSettings):
         "http://localhost:4173",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
-        "https://bridge-sign.vercel.app",
+        "https://connect-sign-nine.vercel.app",
     ]
 
     @field_validator("CORS_ORIGINS", mode="after")
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
             "http://localhost:4173",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:3000",
-            "https://bridge-sign.vercel.app",
+            "https://connect-sign-nine.vercel.app",
         ]
 
         def _clean(item: str) -> List[str]:
