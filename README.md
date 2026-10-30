@@ -1,4 +1,4 @@
-# ConnectSign — Every Hand Has a Voice
+# ConnectSign - Every Hand Has a Voice
 
 [![Production Web App](https://img.shields.io/badge/Production-Live%20on%20Vercel-0D9488?style=flat&logo=vercel)](https://connect-sign-nine.vercel.app/)
 [![Backend API Health](https://img.shields.io/badge/API-Live%20on%20Render-46E3B7?style=flat&logo=render)](https://connect-sign.onrender.com/health)
@@ -232,106 +232,7 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ---
 
-## 10. Environment Variables (Safe Placeholders)
-
-### Frontend Configuration (`frontend/.env.example`)
-| Variable | Default Value | Description |
-|---|---|---|
-| `VITE_APP_NAME` | `ConnectSign` | Application title displayed in headers and manifest |
-| `VITE_AI_ADAPTER` | `http` | Active recognition adapter (`http` for live server, `mock` for demo) |
-| `VITE_API_BASE_URL` | `https://connect-sign.onrender.com` | Base URL of the FastAPI recognition backend |
-| `VITE_WS_URL` | `wss://connect-sign.onrender.com/ws/recognize` | WebSocket endpoint placeholder |
-| `VITE_CONFIDENCE_THRESHOLD` | `0.70` | Default UI threshold for sign visual indicators |
-| `VITE_CONFIDENCE_HIGH` | `0.85` | High-confidence threshold tier |
-| `VITE_SEQUENCE_FRAMES` | `48` | Sliding window frame buffer size |
-| `VITE_APP_VERSION` | `0.1.0` | Application semantic version |
-
-### Backend Configuration (`backend/.env.example`)
-| Variable | Default Value | Description |
-|---|---|---|
-| `ENVIRONMENT` | `development` | Runtime environment (`development` or `production`) |
-| `HOST` | `0.0.0.0` | Network binding interface |
-| `PORT` | `8000` | HTTP listening port |
-| `MODEL_DIR` | `models` | Directory path containing model weights and task files |
-| `UNCERTAINTY_THRESHOLD` | `0.12` | Minimum softmax prediction score before rejection |
-| `MAX_FRAMES` | `48` | Maximum frame sequence threshold cap |
-| `CORS_ORIGINS` | `["http://localhost:5173","http://localhost:3000","https://connect-sign-nine.vercel.app"]` | Allowed CORS origins (JSON array or comma-separated) |
-
----
-
-## 11. API Endpoints and Verified Schemas
-
-### 1. Health Probe (`GET /health`)
-```bash
-curl -X GET http://localhost:8000/health
-```
-**Response (200 OK):**
-```json
-{
-  "status": "ok",
-  "service": "ConnectSign AI Recognition API",
-  "version": "0.2.0",
-  "model_loaded": true,
-  "model_name": "ConnectSign-LSA-Landmark-SVM",
-  "active_vocabulary_classes": 32,
-  "device": "cpu",
-  "timestamp": 1729851234.56
-}
-```
-
-### 2. Sign Recognition (`POST /v1/recognize`)
-```bash
-curl -X POST http://localhost:8000/v1/recognize \
-  -H "Content-Type: application/json" \
-  -d '{"lang":"fr","frames":[]}'
-```
-
-**Response (200 OK — Confident Detection):**
-```json
-{
-  "signs": [
-    {
-      "gloss": "HELP",
-      "confidence": 0.88,
-      "level": "high",
-      "atMs": 250
-    }
-  ],
-  "sequence": ["HELP"],
-  "overallConfidence": 0.88,
-  "level": "high",
-  "frames": 16,
-  "latencyMs": 250,
-  "model": {
-    "name": "ConnectSign-LSA-Landmark",
-    "version": "0.2.0"
-  },
-  "adapter": "live",
-  "isUncertain": false,
-  "rawPredictedLabel": "يساعد",
-  "matchedPhrase": {
-    "id": "ph_emergency_help",
-    "category": "emergency",
-    "text": {
-      "fr": "Aidez-moi c'est une urgence !",
-      "ar": "ساعدوني إنها حالة طارئة!",
-      "en": "Help me it's an emergency!"
-    },
-    "gloss": ["HELP", "EMERGENCY"]
-  },
-  "supportStatus": "FULL_RECOGNITION",
-  "topCandidates": [
-    { "label": "يساعد", "score": 0.88 },
-    { "label": "خطر", "score": 0.05 },
-    { "label": "ماء", "score": 0.02 }
-  ],
-  "rejectionMessage": null
-}
-```
-
----
-
-## 12. Testing and Quality Verification
+## 10. Testing and Quality Verification
 
 ConnectSign maintains extensive automated test suites:
 
@@ -362,7 +263,7 @@ npm --prefix frontend run build
 
 ---
 
-## 13. Known Limitations & Technical Honesty
+## 12. Known Limitations & Technical Honesty
 
 1. **Synthetic Training Benchmark:** The underlying VDzSL model was trained on 3D avatar animations. While spatio-temporal normalization minimizes anatomical differences, natural webcam signing with background clutter or low lighting may degrade classification performance.
 2. **Isolated Single-Sign Windowing:** Inference operates on 16-frame windows (~1.6 seconds) of isolated signs. ConnectSign does **not** perform continuous unpunctuated sign sentence transcription.
@@ -372,7 +273,7 @@ npm --prefix frontend run build
 
 ---
 
-## 14. Accessibility, Language Support & Offline Capabilities
+## 13. Accessibility, Language Support & Offline Capabilities
 
 - **Trilingual Parity:** 730 synchronized i18n keys across French, Arabic, and English with zero missing entries.
 - **RTL-First Engineering:** Native Right-to-Left layout flow using CSS logical properties (`dir="rtl"`), font optimization with `IBM Plex Sans Arabic`, and mirrored icon directions.
@@ -381,11 +282,11 @@ npm --prefix frontend run build
 
 ---
 
-## 15. Thirduni Program & Acknowledgments
+## Thirduni Program & Acknowledgments
 
 ConnectSign was developed as the final capstone project of **Thirduni**, a competitive leadership and technological innovation initiative associated with the **U.S. Embassy in Algeria**.
 
 - **Dataset Attribution:** Machine-learning models are trained on the VDzSL benchmark (Zenodo DOI: `10.5281/zenodo.18209839`, PMC12925472).
 - **Community Partnership:** ConnectSign was designed with continuous consultation from members of the Algerian Deaf community to respect the linguistic sovereignty and cultural dignity of Algerian Sign Language.
 
-💚 **ConnectSign — Every Hand Has a Voice.**
+💚 **ConnectSign - Every Hand Has a Voice.**
